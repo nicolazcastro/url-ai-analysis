@@ -1,6 +1,8 @@
+process.env['TF_CPP_MIN_LOG_LEVEL'] = '2';
 const tf = require('@tensorflow/tfjs-node');
 const mobilenet = require('@tensorflow-models/mobilenet');
 const axios = require('axios').default;
+const fs = require('fs').promises;
 
 async function analyzeImages(images, maxImages) {
     const model = await mobilenet.load();
@@ -29,4 +31,4 @@ async function getImageBuffer(imageSrc) {
     return Buffer.from(response.data, 'binary');
 }
 
-module.exports = analyzeImages;
+module.exports = { analyzeImages };

@@ -1,8 +1,14 @@
 const puppeteer = require('puppeteer');
-const { writePartialData, createFile } = require('./fileWriter');
+const { writePartialData, deleteFileIfExists } = require('./fileWriter');
 const { analyzeImages } = require('./imageAnalyzer');
 
 async function scrape(url, depth, verbose, maxImages, maxLinksPerScrape, outputDirectory, currentDepth = 0, linksScraped = 0, mainUrl = null) {
+
+    // Delete the file if it exists for the main URL
+    if (!mainUrl) {
+        await deleteFileIfExists(url, outputDirectory);
+    }
+    
     const browser = await puppeteer.launch();
     const page = await browser.newPage();
     await page.goto(url);
@@ -21,8 +27,6 @@ async function scrape(url, depth, verbose, maxImages, maxLinksPerScrape, outputD
         title: await page.title()
     };
 
-    const filePath = await createFile(mainUrl, outputDirectory);
-
     let description = null;
     try {
         description = await getDescription(page);
@@ -34,7 +38,8 @@ async function scrape(url, depth, verbose, maxImages, maxLinksPerScrape, outputD
     let text = null;
     try {
         text = await page.$eval('body', element => element.textContent);
-        data.text = text;
+        // Remove extra spaces and newlines
+        text = text.replace(/\s{2,}/g, ' ').replace(/\n/g, '');
     } catch (error) {
         console.error(`Error while getting text for ${url}: ${error.message}`);
     }

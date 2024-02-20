@@ -22,14 +22,66 @@ async function createFile(url, outputDirectory) {
 }
 
 async function writePartialData(data, outputDirectory) {
-    const filePath = await createFile(data.url, outputDirectory);
+    const mainUrlFileName = `${encodeURIComponent(data.url)}.json`;
+    const mainUrlFilePath = path.join(outputDirectory, mainUrlFileName);
 
     try {
-        await fs.writeFile(filePath, JSON.stringify(data, null, 2));
-        console.log(`Data written to file: ${filePath}`);
+        let existingData = {};
+        try {
+            const existingContent = await fs.readFile(mainUrlFilePath, 'utf8');
+            existingData = JSON.parse(existingContent);
+        } catch (error) {
+            // Ignore error if file does not exist or is empty
+        }
+
+        // Add or update data for the main URL
+        existingData.url = data.url;
+        existingData.title = data.title;
+        existingData.description = data.description;
+        existingData.text = data.text;
+
+        // Initialize or create an array to store images
+        existingData.images = existingData.images || [];
+        // Append new images to the array
+        existingData.images.push(...data.images);
+
+        // Initialize or create an array to store sublinks
+        existingData.sublinks = existingData.sublinks || [];
+        
+        // Initialize or create an array to store sublinks
+        existingData.sublinks = existingData.sublinks || [];
+        
+        console.log("existing sublinks:");
+        console.log(existingData.sublinks);
+
+
+        console.log("incoming data.sublinks:");
+        console.log(data.sublinks);
+
+        // Append new sublinks to the array
+        if (data.sublinks && Array.isArray(data.sublinks)) {
+            existingData.sublinks = [...existingData.sublinks, ...data.sublinks];
+        }
+
+        console.log("updated sublinks:");
+        console.log(existingData.sublinks);
+
+        await fs.writeFile(mainUrlFilePath, JSON.stringify(existingData, null, 2));
+        console.log(`Data written to file: ${mainUrlFilePath}`);
     } catch (error) {
-        console.error(`Error writing data to file ${filePath}: ${error.message}`);
+        console.error(`Error writing data to file ${mainUrlFilePath}: ${error.message}`);
     }
 }
 
-module.exports = { writePartialData, createFile };
+async function deleteFileIfExists(url, outputDirectory) {
+    const filePath = await createFile(url, outputDirectory);
+
+    try {
+        await fs.unlink(filePath);
+        console.log(`Deleted file: ${filePath}`);
+    } catch (error) {
+        // Ignore error if file does not exist
+    }
+}
+
+module.exports = { writePartialData, deleteFileIfExists };
