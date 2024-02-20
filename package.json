@@ -1,0 +1,16 @@
+{
+  "name": "url-ai-analysis",
+  "version": "1.0.0",
+  "description": "A URL analysis tool using Puppeteer",
+  "main": "index.js",
+  "scripts": {
+    "start": "node src/index.js"
+  },
+  "dependencies": {
+    "@tensorflow-models/mobilenet": "^2.1.1",
+    "@tensorflow/tfjs-node": "^4.17.0",
+    "axios": "^1.6.7",
+    "dotenv": "^10.0.0",
+    "puppeteer": "^13.1.0"
+  }
+}
