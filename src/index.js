@@ -4,7 +4,7 @@ const scrape = require('./utils/scraper');
 // Load environment variables from .env file
 dotenv.config();
 
-const url = process.argv[2]; // URL as command line argument
+const url = process.argv[2] || 'https://github.com/nicolazcastro/url-ai-analysis'; // URL as command line argument
 const depth = process.env.DEPTH || 2; // Depth of sublink analysis
 const verbose = process.env.VERBOSE === 'true'; // Verbose mode
 const maxImages = process.env.MAX_IMAGES || 5; // Maximum number of images to analyze

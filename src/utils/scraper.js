@@ -35,13 +35,16 @@ async function scrape(url, depth, verbose, maxImages, maxLinksPerScrape, outputD
         console.error(`Error while getting description for ${url}: ${error.message}`);
     }
 
-    let text = null;
-    try {
-        text = await page.$eval('body', element => element.textContent);
-        // Remove extra spaces and newlines
-        text = text.replace(/\s{2,}/g, ' ').replace(/\n/g, '');
-    } catch (error) {
-        console.error(`Error while getting text for ${url}: ${error.message}`);
+    if (!mainUrl) {
+        let text = null;
+        try {
+            text = await page.$eval('body', element => element.textContent);
+            // Remove extra spaces and newlines
+            text = text.replace(/\s{2,}/g, ' ').replace(/\n/g, '');
+            data.rawText = text; // Set rawText property
+        } catch (error) {
+            console.error(`Error while getting text for ${url}: ${error.message}`);
+        }
     }
 
     const images = await page.$$eval('img', imgs => imgs.map(img => img.src));
@@ -60,7 +63,9 @@ async function scrape(url, depth, verbose, maxImages, maxLinksPerScrape, outputD
             const sublink = sublinks[i];
             try {
                 console.log(`Analyzing sublink ${i + 1}/${sublinks.length}: ${sublink}`);
-                await scrape(sublink, depth, verbose, maxImages, maxLinksPerScrape, outputDirectory, currentDepth + 1, linksScraped + 1, mainUrl);
+                const sublinkData = await scrape(sublink, depth, verbose, maxImages, maxLinksPerScrape, outputDirectory, currentDepth + 1, linksScraped + 1, mainUrl);
+                data.sublinks = data.sublinks || [];
+                data.sublinks.push(sublinkData);
                 linksScraped++;
             } catch (error) {
                 console.error(`Error while analyzing sublink ${sublink}: ${error.message}`);
@@ -70,6 +75,7 @@ async function scrape(url, depth, verbose, maxImages, maxLinksPerScrape, outputD
 
     await writePartialData(data, outputDirectory);
     await browser.close();
+    return data;
 }
 
 async function getDescription(page) {

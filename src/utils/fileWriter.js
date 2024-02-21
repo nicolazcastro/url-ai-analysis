@@ -50,21 +50,11 @@ async function writePartialData(data, outputDirectory) {
         
         // Initialize or create an array to store sublinks
         existingData.sublinks = existingData.sublinks || [];
-        
-        console.log("existing sublinks:");
-        console.log(existingData.sublinks);
-
-
-        console.log("incoming data.sublinks:");
-        console.log(data.sublinks);
 
         // Append new sublinks to the array
         if (data.sublinks && Array.isArray(data.sublinks)) {
             existingData.sublinks = [...existingData.sublinks, ...data.sublinks];
         }
-
-        console.log("updated sublinks:");
-        console.log(existingData.sublinks);
 
         await fs.writeFile(mainUrlFilePath, JSON.stringify(existingData, null, 2));
         console.log(`Data written to file: ${mainUrlFilePath}`);
