@@ -74,4 +74,10 @@ async function deleteFileIfExists(url, outputDirectory) {
     }
 }
 
-module.exports = { writePartialData, deleteFileIfExists };
+async function writeAiResult(data, outputDirectory, url) {
+    const resultFilePath = `${outputDirectory}/${encodeURIComponent(url)}-ai-result.json`;
+    await fs.writeFile(resultFilePath, JSON.stringify(data, null, 2));
+    console.log(`AI analysis result stored in: ${resultFilePath}`);
+}
+
+module.exports = { writePartialData, deleteFileIfExists, writeAiResult };
