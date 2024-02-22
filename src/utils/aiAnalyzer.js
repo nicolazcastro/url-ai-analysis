@@ -1,52 +1,57 @@
-const openaiClient = require('./openaiClient');
+const { OpenAI } = require('openai');
+require('dotenv').config();
 
-async function analyzeText(data) {
-    const documents = [];
-    documents.push(data.title);
-    documents.push(data.description);
-    documents.push(data.text);
+const apiKey = process.env.OPENAI_API_KEY;
+const openai = new OpenAI(apiKey);
 
-    // Flatten sublinks and images into a single array for analysis
-    const sublinks = flattenSublinks(data.sublinks);
-    const images = flattenImages(data.images);
-
-    // Add sublinks and images to the documents array
-    sublinks.forEach(sublink => {
-        documents.push(sublink.title);
-        documents.push(sublink.description);
-    });
-    images.forEach(image => {
-        documents.push(image.description);
-    });
-
-    const question = "Please analyze the following data and provide a summary of its purpose and main characteristics.";
-    const response = await openaiClient.completions.create({
-        model: 'text-davinci-003',
-        documents: documents,
-        question: question,
-        max_tokens: 150
-    });
-
-    return response.data;
+async function analyzeText(text) {
+    const question = "Please analyze this data which was extracted from a URL and provide an interpretation of its purpose and main features.";
+    const response = await openai.chat.completions.create({
+        messages: [{ role: "system", content: question + '\n\n' + text }],
+        model: "gpt-3.5-turbo-0125",
+      });
+    return response;
 }
 
-function flattenSublinks(sublinks) {
-    let flattened = [];
-    sublinks.forEach(sublink => {
-        flattened.push(sublink);
-        if (sublink.sublinks) {
-            flattened.push(...flattenSublinks(sublink.sublinks));
+function generateTextForAnalysis(data, accumulatedText = '') {
+    let text = accumulatedText;
+    for (const node of data) {
+        if (node.title) {
+            text += node.title + ' ';
         }
-    });
-    return flattened;
+        if (node.description) {
+            text += node.description + ' ';
+        }
+        if (node.url) {
+            text += node.url + ' ';
+        }
+        if (node.description) {
+            text += node.description + ' ';
+        }
+        if (node.images && node.images.length > 0) {
+            for (const image of node.images) {
+                if (image.src) {
+                    text += image.src + ' ';
+                }
+                if (image.description && image.description.length > 0) {
+                    for (const desc of image.description) {
+                        if (desc.className) {
+                            text += desc.className + ' ';
+                        }
+                    }
+                }
+            }
+        }
+        if (node.sublinks && node.sublinks.length > 0) {
+            text += generateTextForAnalysis(node.sublinks, text);
+        }
+    }
+    return text;
 }
 
-function flattenImages(images) {
-    let flattened = [];
-    images.forEach(image => {
-        flattened.push(image);
-    });
-    return flattened;
+async function processUrlData(data) {
+    const text = generateTextForAnalysis([data]);
+    return await analyzeText(text);
 }
 
-module.exports = { analyzeText };
+module.exports = { processUrlData };

@@ -23,7 +23,7 @@ if (!url) {
 }
 
 async function analyzeUrl(url) {
-    await scrape(url, depth, verbose, maxImages, maxLinksPerScrape, outputDirectory);
+    //await scrape(url, depth, verbose, maxImages, maxLinksPerScrape, outputDirectory);
     console.log('URL analyzed successfully.');
 
     // Preprocess the JSON file
@@ -34,7 +34,7 @@ async function analyzeUrl(url) {
 
         // Send the JSON data to the AI analyzer for analysis
         console.log('Sending data to AI for analisys.');
-        const response = await aiAnalyzer.analyzeText(jsonData);
+        const response = await aiAnalyzer.processUrlData(jsonData);
 
         console.log('AI analysis:');
         console.log(response);
