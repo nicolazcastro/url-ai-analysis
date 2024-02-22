@@ -1,17 +1,29 @@
 {
-    // Use IntelliSense para saber los atributos posibles.
-    // Mantenga el puntero para ver las descripciones de los existentes atributos.
-    // Para más información, visite: https://go.microsoft.com/fwlink/?linkid=830387
     "version": "0.2.0",
     "configurations": [
         {
             "type": "node",
             "request": "launch",
-            "name": "Launch Program",
+            "name": "Launch Command Line Program",
             "skipFiles": [
                 "<node_internals>/**"
             ],
             "program": "${workspaceFolder}/src/index.js"
+        },
+        {
+            "type": "node",
+            "request": "launch",
+            "name": "Launch Web Server",
+            "skipFiles": [
+                "<node_internals>/**"
+            ],
+            "program": "${workspaceFolder}/src/index.js",
+            "runtimeArgs": [
+                "--inspect"
+            ],
+            "env": {
+                "NODE_ENV": "development"
+            }
         }
     ]
 }
