@@ -23,7 +23,7 @@ if (!url) {
 }
 
 async function analyzeUrl(url) {
-    //await scrape(url, depth, verbose, maxImages, maxLinksPerScrape, outputDirectory);
+    await scrape(url, depth, verbose, maxImages, maxLinksPerScrape, outputDirectory);
     console.log('URL analyzed successfully.');
 
     // Preprocess the JSON file
