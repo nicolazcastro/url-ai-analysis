@@ -46,5 +46,4 @@ async function analyzeUrl(url) {
     }
 }
 
-analyzeUrl(url)
-    .catch(error => console.error('Error during analysis:', error));
+module.exports = { analyzeUrl };

@@ -15,11 +15,13 @@
             "request": "launch",
             "name": "Launch Web Server",
             "skipFiles": [
-                "<node_internals>/**"
+                "<node_internals>/**",
+                "url-output/**/*"
             ],
-            "program": "${workspaceFolder}/src/index.js",
+            "runtimeExecutable": "node",
             "runtimeArgs": [
-                "--inspect"
+                "--inspect=9229",
+                "${workspaceFolder}/index.js"
             ],
             "env": {
                 "NODE_ENV": "development"

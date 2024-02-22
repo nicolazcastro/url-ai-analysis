@@ -1,5 +1,5 @@
 const puppeteer = require('puppeteer');
-const { writePartialData, deleteFileIfExists } = require('./fileWriter');
+const { writePartialData, deleteFileIfExists, writeLog } = require('./fileWriter');
 const { analyzeImages } = require('./imageAnalyzer');
 
 async function scrape(url, depth, verbose, maxImages, maxLinksPerScrape, outputDirectory, currentDepth = 0, linksScraped = 0, mainUrl = null) {
@@ -14,8 +14,9 @@ async function scrape(url, depth, verbose, maxImages, maxLinksPerScrape, outputD
     await page.goto(url);
 
     if (verbose) {
-        console.log(`Analyzing URL: ${url}`);
-        console.log(`URL parts: ${JSON.stringify(getUrlParts(url))}`);
+        const logMessage = [`Analyzing URL: ${url}`, `URL parts: ${JSON.stringify(getUrlParts(url))}`];
+        console.log(logMessage);
+        writeLog(logMessage, outputDirectory);
     }
 
     if (!mainUrl) {
@@ -32,7 +33,9 @@ async function scrape(url, depth, verbose, maxImages, maxLinksPerScrape, outputD
         description = await getDescription(page);
         data.description = description;
     } catch (error) {
-        console.error(`Error while getting description for ${url}: ${error.message}`);
+        logMessage = `Error while getting description for ${url}: ${error.message}`;
+        console.log(logMessage);
+        writeLog(logMessage, outputDirectory);
     }
 
     if (!mainUrl) {
@@ -43,7 +46,9 @@ async function scrape(url, depth, verbose, maxImages, maxLinksPerScrape, outputD
             text = text.replace(/\s{2,}/g, ' ').replace(/\n/g, '');
             data.rawText = text; // Set rawText property
         } catch (error) {
-            console.error(`Error while getting text for ${url}: ${error.message}`);
+            logMessage = `Error while getting text for ${url}: ${error.message}`;
+            console.log(logMessage);
+            writeLog(logMessage, outputDirectory);
         }
     }
 
@@ -62,13 +67,17 @@ async function scrape(url, depth, verbose, maxImages, maxLinksPerScrape, outputD
         for (let i = 0; i < sublinks.length && linksScraped < maxLinksPerScrape; i++) {
             const sublink = sublinks[i];
             try {
-                console.log(`Analyzing sublink ${i + 1}/${sublinks.length}: ${sublink}`);
+                logMessage = `Analyzing sublink ${i + 1}/${sublinks.length}: ${sublink}`;
+                console.log(logMessage);
+                writeLog(logMessage, outputDirectory);
                 const sublinkData = await scrape(sublink, depth, verbose, maxImages, maxLinksPerScrape, outputDirectory, currentDepth + 1, linksScraped + 1, mainUrl);
                 data.sublinks = data.sublinks || [];
                 data.sublinks.push(sublinkData);
                 linksScraped++;
             } catch (error) {
-                console.error(`Error while analyzing sublink ${sublink}: ${error.message}`);
+                logMessage = `Error while analyzing sublink ${sublink}: ${error.message}`;
+                console.log(logMessage);
+                writeLog(logMessage, outputDirectory);
             }
         }
     }

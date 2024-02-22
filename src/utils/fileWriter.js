@@ -65,6 +65,22 @@ async function writePartialData(data, outputDirectory) {
 
 async function deleteFileIfExists(url, outputDirectory) {
     const filePath = await createFile(url, outputDirectory);
+    const logFilePath = outputDirectory + '/log.txt';
+    const resultFilePath = filePath.replace(".json", "-ai-result.json")
+
+    try {
+        await fs.unlink(resultFilePath);
+        console.log(`Deleted file: ${resultFilePath}`);
+    } catch (error) {
+        // Ignore error if file does not exist
+    }
+
+    try {
+        await fs.unlink(logFilePath);
+        console.log(`Deleted file: ${logFilePath}`);
+    } catch (error) {
+        // Ignore error if file does not exist
+    }
 
     try {
         await fs.unlink(filePath);
@@ -80,4 +96,24 @@ async function writeAiResult(data, outputDirectory, url) {
     console.log(`AI analysis result stored in: ${resultFilePath}`);
 }
 
-module.exports = { writePartialData, deleteFileIfExists, writeAiResult };
+async function writeLog(messages, outputDirectory) {
+    const logFilePath = path.join(outputDirectory, 'log.txt');
+    let formattedMessages = Array.isArray(messages) ? messages : [messages];
+    formattedMessages = formattedMessages.map(message => `${new Date().toISOString()} - ${message}\n`);
+
+    return new Promise((resolve, reject) => {
+        try {
+            fs.appendFile(logFilePath, formattedMessages.join(''), (err) => {
+                if (err) {
+                    reject(err);
+                } else {
+                    resolve();
+                }
+            });
+        } catch (error) {
+            Console.log('Failed to write log');
+        }
+    });
+}
+
+module.exports = { writePartialData, deleteFileIfExists, writeAiResult, writeLog };
