@@ -2,10 +2,14 @@ const { OpenAI } = require('openai');
 require('dotenv').config();
 
 const apiKey = process.env.OPENAI_API_KEY;
+const analysisLanguage = process.env.ANALYSIS_LANGUAGE;
 const openai = new OpenAI(apiKey);
 
 async function analyzeText(text) {
-    const question = "Please analyze this data which was extracted from a URL and provide an interpretation of its purpose and main features.";
+    const question = `Please analyze this data which was extracted from a URL and provide an interpretation of its purpose and main features. 
+    Use the images description just as a referente to provide context. 
+    DO NOT mention the images in your analysis. 
+    Give me a summary of the url purpose. Give me the answer in ` + analysisLanguage;
     const response = await openai.chat.completions.create({
         messages: [{ role: "system", content: question + '\n\n' + text }],
         model: "gpt-3.5-turbo-0125",

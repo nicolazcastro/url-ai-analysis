@@ -1,9 +1,12 @@
 $(document).ready(function() {
     let isCompleted = false;
+    let url = '';
 
     $('#analyzeBtn').click(function() {
-        const url = $('#url').val();
-        $('#result').text('');
+        console.log("Starting analysis");
+        isCompleted = false
+        url = $('#url').val();
+        $('#result').text('Analysis started. Please wait...');
         $.ajax({
             url: 'http://localhost:3000/analyze',
             type: 'POST',
@@ -11,41 +14,48 @@ $(document).ready(function() {
             data: JSON.stringify({ url: url }),
             success: function(response) {
                 console.log(response);
-                $('#result').text('Analysis started. Please wait...');
-                checkResult(url);
             },
             error: function(err) {
+                isCompleted = true
                 console.error(err);
-                $('#result').text('Error analyzing URL');
+                $('#result').text('Error analyzing URL, ' + err.responseJSON.message);
             }
         });
+        startCheckResult();
     });
 
-    let completed = false;
-    function checkResult(url) {
+    function checkResult(requestUrl) {
         $.ajax({
             url: 'http://localhost:3000/result',
             type: 'GET',
-            data: { url: url },
+            data: { url: requestUrl },
             success: function(response) {
-                console.log("response: ", response.completed, response.analysisCompleted);
                 if(response.completed === false) {
-                    console.log(1);
-                    completed = false;
+                    const logText = response.message.split(' - ')[1];
+                    $('#result').html(logText);
                 } else{
-                    console.log(2);
+                    isCompleted = true
                     $('#result').html(response);
-                    // Check if the result contains the OpenAI analysis
-                    if (response.includes('Analysis result from aiAnalyzer.js')) {
-                        completed = true;
-                    }
                 }
-                //setTimeout(checkResult, 2000);
             },
             error: function(err) {
                 console.error(err);
-                $('#result').text('Error calling /result path');
+                $('#result').text('Error calling /result path, ' + err.responseJSON.message);
             }
         });
     }
+
+    function startCheckResult() {
+        console.log("Starting checkResult");
+        const checkResultTimer = setInterval(function() {
+            if(isCompleted === true){
+                console.log("clearing checkResultTimer");
+                clearInterval(checkResultTimer);
+                return;
+            } else{
+                checkResult(url);
+            }
+        }, 10000);
+    }
+
 });

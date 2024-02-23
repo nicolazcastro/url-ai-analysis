@@ -16,6 +16,7 @@ let analysisCompleted = false;
 
 // Route to handle URL analysis request
 app.post('/analyze', async (req, res) => {
+    analysisCompleted = false;
     const { url } = req.body;
     if (!url) {
         return res.status(400).json({ error: 'Missing URL in request body' });
@@ -23,10 +24,10 @@ app.post('/analyze', async (req, res) => {
     try {
         await analyzeUrl(url); // Generate the JSON file with analysis result
         analysisCompleted = true;
-        res.json({ message: 'Analysis started', completed: false });
+        res.json({ message: 'Analysis finished', completed: true, analysisCompleted: analysisCompleted });
     } catch (error) {
         console.error('Error processing URL:', error);
-        res.status(500).json({ error: 'Failed to process URL' });
+        res.status(500).json({ message: error.message, completed: true, analysisCompleted: true });
     }
 });
 
@@ -46,7 +47,7 @@ app.get('/result', (req, res) => {
 
             const logs = logData.trim().split('\n'); // Split log file content into an array of lines
             const lastLog = logs[logs.length - 1]; // Get the last line of the log
-            res.json({ log: lastLog });
+            res.json({ message: lastLog, completed: false, analysisCompleted: analysisCompleted });
         });
     } else {
         fs.readFile(resultFilePath, 'utf8', (err, jsonString) => {
