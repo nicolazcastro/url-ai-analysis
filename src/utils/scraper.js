@@ -3,7 +3,7 @@ const { writePartialData, deleteFileIfExists, writeLog } = require('./fileWriter
 const { analyzeImages } = require('./imageAnalyzer');
 
 
-async function scrape(url, depth, verbose, maxImages, maxLinksPerScrape, outputDirectory, currentDepth = 0, linksScraped = 0, mainUrl = null, setRawText = false) {
+async function scrape(url, depth, verbose, maxImages, maxLinksPerScrape, outputDirectory, currentDepth = 0, linksScraped = 0, mainUrl = null) {
 
     // Delete the file if it exists for the main URL
     if (!mainUrl) {
@@ -22,7 +22,6 @@ async function scrape(url, depth, verbose, maxImages, maxLinksPerScrape, outputD
 
     if (!mainUrl) {
         mainUrl = url;
-        setRawText = true;
     } 
 
     const data = {
@@ -40,23 +39,20 @@ async function scrape(url, depth, verbose, maxImages, maxLinksPerScrape, outputD
         writeLog(logMessage, outputDirectory);
     }
 
-    if (setRawText === true) {
-        setRawText = false;
-        let text = null;
-        try {
-            logMessage = `Analyzing raw page text`;
-            console.log(logMessage);
-            writeLog(logMessage, outputDirectory);
+    let text = null;
+    try {
+        logMessage = `Analyzing raw page text`;
+        console.log(logMessage);
+        writeLog(logMessage, outputDirectory);
 
-            text = await page.$eval('body', element => element.textContent);
-            // Remove extra spaces and newlines
-            text = text.replace(/\s{2,}/g, ' ').replace(/\n/g, '');
-            data.rawText = text; // Set rawText property
-        } catch (error) {
-            logMessage = `Error while getting text for ${url}: ${error.message}`;
-            console.log(logMessage);
-            writeLog(logMessage, outputDirectory);
-        }
+        text = await page.$eval('body', element => element.textContent);
+        // Remove extra spaces and newlines
+        text = text.replace(/\s{2,}/g, ' ').replace(/\n/g, '');
+        data.rawText = text; // Set rawText property
+    } catch (error) {
+        logMessage = `Error while getting text for ${url}: ${error.message}`;
+        console.log(logMessage);
+        writeLog(logMessage, outputDirectory);
     }
 
     const images = await page.$$eval('img', imgs => imgs.map(img => img.src));
@@ -77,7 +73,7 @@ async function scrape(url, depth, verbose, maxImages, maxLinksPerScrape, outputD
                 logMessage = `Analyzing sublink ${i + 1}/${sublinks.length}: ${sublink}`;
                 console.log(logMessage);
                 writeLog(logMessage, outputDirectory);
-                const sublinkData = await scrape(sublink, depth, verbose, maxImages, maxLinksPerScrape, outputDirectory, currentDepth + 1, linksScraped + 1, mainUrl, setRawText);
+                const sublinkData = await scrape(sublink, depth, verbose, maxImages, maxLinksPerScrape, outputDirectory, currentDepth + 1, linksScraped + 1, mainUrl);
                 data.sublinks = data.sublinks || [];
                 data.sublinks.push(sublinkData);
                 linksScraped++;
