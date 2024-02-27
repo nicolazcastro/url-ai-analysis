@@ -6,7 +6,6 @@ const jsonProcessor = require('../utils/jsonProcessor'); // Include the JSON pro
 const fileWriter = require('../utils/fileWriter'); // Include the fileWriter module
 const jwt = require('jsonwebtoken');
 const bcrypt = require('bcrypt');
-const db = require('../db');
 
 const secretKey = process.env.SECRET_KEY || 'your_secret_key'; // Change this to a secure key
 

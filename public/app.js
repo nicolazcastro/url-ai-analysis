@@ -1,9 +1,36 @@
 $(document).ready(function() {
     let isCompleted = false;
     let url = '';
+    let loggedUserId = '';
+    let loggedUserEmail = '';
 
     function getToken() {
         return localStorage.getItem('token');
+    }
+
+    function isUserLogged() {
+        let token =  localStorage.getItem('token');
+        if(token){
+            const decodedToken = decodeToken(token);
+            loggedUserId = decodedToken.userId;
+            loggedUserEmail = decodedToken.email;
+            if (decodedToken.exp * 1000 > Date.now()) {
+                return true;
+            } else {
+                return false;
+            }
+        }
+        return false;
+    }
+
+    function decodeToken(token) {
+        const base64Url = token.split('.')[1];
+        const base64 = base64Url.replace(/-/g, '+').replace(/_/g, '/');
+        const jsonPayload = decodeURIComponent(atob(base64).split('').map(function(c) {
+            return '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2);
+        }).join(''));
+    
+        return JSON.parse(jsonPayload);
     }
 
     // Set up a global AJAX prefilter
@@ -20,17 +47,28 @@ $(document).ready(function() {
     // Function to show/hide user options based on login state
     function toggleUserOptions(isLoggedIn) {
         if (isLoggedIn) {
-            $('#userOptions').show();
+            $('#logoutBtn').show();
+            $('#userDisplayName').show();
+            $('#loginBtn').hide();
         } else {
-            $('#userOptions').hide();
+            $('#logoutBtn').hide();
+            $('#userDisplayName').hide();
+            $('#loginBtn').show();
         }
     }
 
-    const isLoggedIn = true; // Example: Change this to your actual check
-    if (isLoggedIn) {
-        updateUserDisplayName('John Doe'); // Example: Replace 'John Doe' with actual user display name
+    let isLoggedIn = false;
+    setUserDataLogin();
+        
+    function setUserDataLogin(){
+        isLoggedIn = isUserLogged();
+        if (isLoggedIn) {
+            updateUserDisplayName(loggedUserEmail); 
+        }
+        toggleUserOptions(isLoggedIn);
     }
-    toggleUserOptions(isLoggedIn);
+
+    setUserDataLogin();
 
     $('#analyzeBtn').click(function() {
         console.log("Starting analysis");
@@ -85,7 +123,7 @@ $(document).ready(function() {
             } else {
                 checkResult(url);
             }
-        }, 10000);
+        }, 2000);
     }
 
     // Login AJAX request
@@ -101,9 +139,8 @@ $(document).ready(function() {
             data: JSON.stringify({ email: email, password: password }),
             success: function(response) {
                 $('#loginModal').modal('hide');
-                updateUserDisplayName(response.name); // Update the user display name
-                toggleUserOptions(true); // Show user options
                 localStorage.setItem('token', response.token); // Store the token in local storage
+                setUserDataLogin();
             },
             error: function(err) {
                 // Handle login error

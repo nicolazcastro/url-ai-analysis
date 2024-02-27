@@ -1,14 +1,15 @@
 const userService = require('../services/userService');
 const { generateToken } = require('../services/authService');
+const bcrypt = require('bcrypt');
 
 const registerUser = async (req, res) => {
-    const { username, password } = req.body;
+    const { email, password } = req.body;
     try {
-        const userExists = await userService.checkUserExistence(username);
+        const userExists = await userService.checkUserExistence(email);
         if (userExists) {
             return res.status(409).send({ error: error.message });
         }
-        await userService.registerUser(username, password);
+        await userService.registerUser(email, password);
         res.status(201).send('User registered successfully');
     } catch (error) {
         res.status(400).send({ error: error.message });

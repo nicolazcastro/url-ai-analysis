@@ -4,6 +4,15 @@
         {
             "type": "node",
             "request": "launch",
+            "name": "Launch Seeder Program",
+            "skipFiles": [
+                "<node_internals>/**"
+            ],
+            "program": "${workspaceFolder}/src/sync-sequelize.js"
+        },
+        {
+            "type": "node",
+            "request": "launch",
             "name": "Launch Command Line Program",
             "skipFiles": [
                 "<node_internals>/**"
