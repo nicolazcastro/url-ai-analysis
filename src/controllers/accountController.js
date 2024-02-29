@@ -10,8 +10,7 @@ const updateCredit = async (req, res) => {
     }
 
     try {
-        const { credit } = req.body;
-        const userId = req.user.id; // Assuming userId is available in the request
+        const { credit, userId } = req.body;
 
         await userService.updateCredit(userId, credit);
 

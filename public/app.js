@@ -8,6 +8,10 @@ $(document).ready(function() {
         return localStorage.getItem('token');
     }
 
+    function getLoggedUserId(){
+        return getUserIdFromToken(getToken());
+    }
+
     function isUserLogged() {
         let token =  localStorage.getItem('token');
         if(token){
@@ -92,18 +96,25 @@ $(document).ready(function() {
         isCompleted = false
         url = $('#url').val();
         $('#result').text('Analysis started. Please wait...');
+        
+        const userId = getLoggedUserId();
+
         $.ajax({
             url: 'http://localhost:3000/analyze',
             type: 'POST',
             contentType: 'application/json',
-            data: JSON.stringify({ url: url }),
+            data: JSON.stringify({ url: url, userId: userId }),
             success: function(response) {
                 console.log(response);
             },
             error: function(err) {
                 isCompleted = true
-                console.error(err);
-                $('#result').text('Error analyzing URL, ' + err.responseJSON.message);
+                if (err.status === 403) {
+                    $('#result').text('Insufficient credit to perform analysis');
+                } else {
+                    console.error(err);
+                    $('#result').text('Error analyzing URL: ' + err.responseJSON.error);
+                }
             }
         });
         startCheckResult();
@@ -213,12 +224,11 @@ $(document).ready(function() {
 
         $.ajax({
             url: `http://localhost:3000/credit/${userId}`,
-            type: 'GET',
-            data: { userId: userId }, 
+            type: 'GET', 
             success: function(response) {
                 $('#manageUserDataModal').modal('show');
                 // Update modal input with user credit
-                $('#creditAmount').val(response.credit);
+                $('#creditInput').val(response.credit);
             },
             error: function(err) {
                 console.error(err);
@@ -229,19 +239,21 @@ $(document).ready(function() {
 
     // Update credit button click event
     $('#updateCreditBtn').click(function() {
-        const creditAmount = $('#creditAmount').val();
+        const creditAmount = $('#creditInput').val();
         
-        if (!validateCreditInput(creditInput)) {
+        if (!validateCreditInput(creditAmount)) {
             // Display error message if input is invalid
             $('#creditErrorMsg').text('Please enter a valid positive integer or 0.');
             return;
         }
 
+        const userId = getLoggedUserId();
+
         $.ajax({
             url: 'http://localhost:3000/credit',
             type: 'POST',
             contentType: 'application/json',
-            data: JSON.stringify({ credit: creditAmount }),
+            data: JSON.stringify({ userId: userId, credit: creditAmount }),      
             success: function(response) {
                 // Handle success
                 console.log('Credit updated successfully');

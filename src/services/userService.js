@@ -38,7 +38,7 @@ const checkUserExistence = async (email) => {
 
 const updateCredit = async (userId, credit) => {
     // Find the user's account and update the credit
-    const account = await Account.findOne({ where: { user_id: userId } });
+    const account = await Account.findOne({ where: { userId: userId } });
     if (!account) {
         throw new Error('Account not found');
     }
@@ -55,7 +55,7 @@ const getCredit = async (userId) => {
         }
 
         // Find the corresponding account for the user
-        const account = await Account.findOne({ where: { user_id: userId } });
+        const account = await Account.findOne({ where: { userId: userId } });
         if (!account) {
             throw new Error('Account not found');
         }
