@@ -33,6 +33,21 @@ $(document).ready(function() {
         return JSON.parse(jsonPayload);
     }
 
+    function getUserIdFromToken(token) {
+        if (!token) {
+            console.error('Token not provided');
+            return null;
+        }
+    
+        const decodedToken = decodeToken(token);
+        if (!decodedToken || !decodedToken.userId) {
+            console.error('Invalid token or missing user ID');
+            return null;
+        }
+    
+        return decodedToken.userId;
+    }
+
     // Set up a global AJAX prefilter
     $.ajaxPrefilter(function(options, originalOptions, jqXHR) {
         // Add the token to the request headers
@@ -49,10 +64,12 @@ $(document).ready(function() {
         if (isLoggedIn) {
             $('#logoutBtn').show();
             $('#userDisplayName').show();
+            $('#manageCreditBtn').show();
             $('#loginBtn').hide();
         } else {
             $('#logoutBtn').hide();
             $('#userDisplayName').hide();
+            $('#manageCreditBtn').hide();
             $('#loginBtn').show();
         }
     }
@@ -180,6 +197,84 @@ $(document).ready(function() {
     // Logout button click event
     $('#logoutBtn').click(function() {
         logout(); // Call the logout function
+    });
+
+    // Function to fetch user credit
+    function getUserCredit() {
+        const token = getToken(); // Assuming you have a function to retrieve the token
+
+        // Decode the token to extract the user ID
+        const userId = getUserIdFromToken(token); 
+
+        if (!userId) {
+            console.error('User ID not found');
+            return;
+        }
+
+        $.ajax({
+            url: `http://localhost:3000/credit/${userId}`,
+            type: 'GET',
+            data: { userId: userId }, 
+            success: function(response) {
+                $('#manageUserDataModal').modal('show');
+                // Update modal input with user credit
+                $('#creditAmount').val(response.credit);
+            },
+            error: function(err) {
+                console.error(err);
+                // Handle error
+            }
+        });
+    }
+
+    // Update credit button click event
+    $('#updateCreditBtn').click(function() {
+        const creditAmount = $('#creditAmount').val();
+        
+        if (!validateCreditInput(creditInput)) {
+            // Display error message if input is invalid
+            $('#creditErrorMsg').text('Please enter a valid positive integer or 0.');
+            return;
+        }
+
+        $.ajax({
+            url: 'http://localhost:3000/credit',
+            type: 'POST',
+            contentType: 'application/json',
+            data: JSON.stringify({ credit: creditAmount }),
+            success: function(response) {
+                // Handle success
+                console.log('Credit updated successfully');
+            },
+            error: function(err) {
+                console.error(err);
+                // Handle error
+            }
+        });
+    });
+
+    function validateCreditInput(input) {
+        // Regular expression to match positive integers or zero
+        const regex = /^(0|[1-9]\d*)$/;
+        return regex.test(input);
+    }
+
+    // Show modal when "Manage User Data" link is clicked
+    $('#manageCreditBtn').click(function() {
+        console.log("Button clicked");
+        $('#creditErrorMsg').text('');
+        $('#creditInput').val('');
+        getUserCredit(); // Fetch user credit
+    });
+
+    $('#creditInput').on('input', function() {
+        const creditInput = $(this).val();
+        const isValid = validateCreditInput(creditInput);
+        if (!isValid) {
+            $('#creditErrorMsg').text('Please enter a valid positive integer or 0.');
+        } else {
+            $('#creditErrorMsg').text('');
+        }
     });
 
 });

@@ -3,6 +3,7 @@ const sequelize = require('../sequelize');
 const bcrypt = require('bcrypt');
 
 const Role = require('./role');
+const Account = require('./account');
 
 const User = sequelize.define('User', {
     email: {
@@ -18,5 +19,13 @@ const User = sequelize.define('User', {
 
 User.belongsToMany(Role, { through: 'UserRole' });
 Role.belongsToMany(User, { through: 'UserRole' });
+User.hasOne(Account, {
+    foreignKey: {
+        name: 'userId',
+        allowNull: false,
+        onDelete: 'NO ACTION',
+        onUpdate: 'NO ACTION'
+    }
+});
 
 module.exports = User;

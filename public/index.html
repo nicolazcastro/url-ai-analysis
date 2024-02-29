@@ -77,6 +77,10 @@
                             <a class="nav-link" href="#" id="logoutBtn">Logout</a>
                         </li>
                         <li class="nav-item">
+                            <a class="nav-link" href="#" data-bs-toggle="modal" id="manageCreditBtn"
+                                data-bs-target="#creditModal">Manage User Credit</a>
+                        </li>
+                        <li class="nav-item">
                             <a class="nav-link" href="#" data-bs-toggle="modal" id="loginBtn"
                                 data-bs-target="#loginModal">Login/Register</a>
                         </li>
@@ -102,6 +106,7 @@
         </div>
     </footer>
 
+    <!-- Login Modal -->
     <div id="loginModal" class="modal fade" tabindex="-1">
         <div class="modal-dialog">
             <div class="modal-content">
@@ -155,6 +160,29 @@
                             </form>
                         </div>
                     </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Credit Management Modal -->
+    <div id="creditModal" class="modal fade" tabindex="-1">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Manage User Credit</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="mb-3">
+                        <label for="creditInput" class="form-label">User Credit</label>
+                        <input type="text" class="form-control" id="creditInput" placeholder="Enter user credit">
+                        <div id="creditErrorMsg" class="text-danger"></div> <!-- Error message display -->
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                    <button type="button" id="saveCreditBtn" class="btn btn-primary">Save</button>
                 </div>
             </div>
         </div>

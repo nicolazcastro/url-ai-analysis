@@ -39,6 +39,7 @@ async function writePartialData(data, outputDirectory) {
         existingData.title = data.title;
         existingData.description = data.description;
         existingData.text = data.text;
+        existingData.rawText = data.rawText;
 
         // Initialize or create an array to store images
         existingData.images = existingData.images || [];
