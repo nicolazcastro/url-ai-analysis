@@ -37,6 +37,10 @@ const checkUserExistence = async (email) => {
 };
 
 const updateCredit = async (userId, credit) => {
+    if (isNaN(credit) || credit < 0) {
+        throw new Error('Invalid credit value');
+    }
+    
     // Find the user's account and update the credit
     const account = await Account.findOne({ where: { userId: userId } });
     if (!account) {

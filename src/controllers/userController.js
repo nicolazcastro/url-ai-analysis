@@ -10,9 +10,9 @@ const registerUser = async (req, res) => {
             return res.status(409).send({ error: error.message });
         }
         await userService.registerUser(email, password);
-        res.status(201).send('User registered successfully');
+        res.status(201).send({ message: 'User registered successfully' });
     } catch (error) {
-        res.status(400).send({ error: error.message });
+        res.status(400).send({ message: error.message });
     }
 };
 
@@ -21,12 +21,12 @@ const loginUser = async (req, res) => {
     try {
         const user = await userService.loginUser(email, password);
         if (!user) {
-            return res.status(401).send({ error: 'Invalid email or password' });
+            return res.status(401).send({ message: 'Invalid email or password' });
         }
         const token = generateToken(user.id, user.email);
         res.send({ token });
     } catch (error) {
-        res.status(400).send({ error: error.message });
+        res.status(401).send({ message: error.message });
     }
 };
 

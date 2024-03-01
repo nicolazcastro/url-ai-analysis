@@ -9,17 +9,18 @@ const analyzeUrl = async (req, res) => {
     const userCredit = await userService.getCredit(userId);
 
     if (userCredit <= 0) {
-        return res.status(403).json({ error: 'Insufficient credit' });
+        return res.status(402).json({ message: 'Insufficient credit' });
     }
     
     if (!url) {
-        return res.status(400).json({ error: 'Missing URL in request body' });
+        return res.status(400).json({ message: 'Missing URL in request body' });
     }
     try {
         await analyze(url);
-        analysisCompleted = true;     
-        //TODO
-        //substract 1 from user credit  
+        analysisCompleted = true;    
+
+        await userService.updateCredit(userId, userCredit - 1);
+        
         res.json({ message: 'Analysis finished' });
     } catch (error) {
         console.error('Error processing URL:', error);
