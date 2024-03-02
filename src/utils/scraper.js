@@ -3,11 +3,11 @@ const { writePartialData, deleteFileIfExists, writeLog } = require('./fileWriter
 const { analyzeImages } = require('./imageAnalyzer');
 
 
-async function scrape(url, depth, verbose, maxImages, maxLinksPerScrape, outputDirectory, currentDepth = 0, linksScraped = 0, mainUrl = null, passCounter = 0) {
+async function scrape(userId, url, depth, verbose, maxImages, maxLinksPerScrape, outputDirectory, currentDepth = 0, linksScraped = 0, mainUrl = null, passCounter = 0) {
 
     // Delete the file if it exists for the main URL
     if (!mainUrl) {
-        await deleteFileIfExists(url, outputDirectory);
+        await deleteFileIfExists(userId, outputDirectory);
     }
     
     const browser = await puppeteer.launch();
@@ -76,7 +76,7 @@ async function scrape(url, depth, verbose, maxImages, maxLinksPerScrape, outputD
                     logMessage = `Analyzing sublink ${i + 1}/${sublinks.length}: ${sublinkUrl}`;
                     console.log(logMessage);
                     writeLog(logMessage, outputDirectory);
-                    const sublinkData = await scrape(sublinkUrl, depth, verbose, maxImages, maxLinksPerScrape, outputDirectory, currentDepth + 1, linksScraped + 1, mainUrl);
+                    const sublinkData = await scrape(userId, sublinkUrl, depth, verbose, maxImages, maxLinksPerScrape, outputDirectory, currentDepth + 1, linksScraped + 1, mainUrl);
                     data.sublinks = data.sublinks || [];
                     data.sublinks.push(sublinkData);
                     linksScraped++;

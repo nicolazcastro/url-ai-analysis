@@ -4,11 +4,6 @@ const scrape = require('../utils/scraper');
 const aiAnalyzer = require('../utils/aiAnalyzer'); // Include the AI analysis module
 const jsonProcessor = require('../utils/jsonProcessor'); // Include the JSON processing module
 const fileWriter = require('../utils/fileWriter'); // Include the fileWriter module
-const jwt = require('jsonwebtoken');
-const bcrypt = require('bcrypt');
-
-const secretKey = process.env.SECRET_KEY || 'your_secret_key'; // Change this to a secure key
-
 
 // Load environment variables from .env file
 dotenv.config();
@@ -19,8 +14,8 @@ const verbose = process.env.VERBOSE || false; // Verbose mode
 const maxImages = process.env.MAX_IMAGES || 10; // 
 const maxLinksPerScrape = process.env.MAX_LINKS || 5; // Max amount of links per page to be analized
 
-async function analyze(url){
-    await scrape(url, depth, verbose, maxImages, maxLinksPerScrape, outputDirectory);
+async function analyze(url, userId){
+    await scrape(userId, url, depth, verbose, maxImages, maxLinksPerScrape, outputDirectory);
     console.log('URL analyzed successfully.');
 
     // Preprocess the JSON file
@@ -37,7 +32,7 @@ async function analyze(url){
         console.log(response);
 
         // Store the AI analysis result in a file
-        await fileWriter.writeAiResult(response, outputDirectory, url);
+        await fileWriter.writeAiResult(userId, response, outputDirectory, url);
     } catch (error) {
         console.error('Error during analysis:', error);
     }

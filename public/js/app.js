@@ -1,10 +1,10 @@
 let isLoggedIn = false;
+let isCompleted = false;
+let url = '';
+let loggedUserId = '';
+let loggedUserEmail = '';
 
 $(document).ready(function() {
-    let isCompleted = false;
-    let url = '';
-    let loggedUserId = '';
-    let loggedUserEmail = '';
 
     $('.alert-close-btn').click(function() {
         hideAlert();
@@ -112,6 +112,7 @@ $(document).ready(function() {
             data: JSON.stringify({ userId: userId, credit: creditAmount }),      
             success: function(response) {
                 showAlert('Credit updated successfully');
+                $('#creditModal').modal('hide');
             },
             error: function(err) {
                 showAlert(err.responseJSON.message);
@@ -169,7 +170,7 @@ function checkResult(requestUrl) {
     $.ajax({
         url: 'http://localhost:3000/result',
         type: 'GET',
-        data: { url: requestUrl },
+        data: { url: requestUrl, userId: loggedUserId },
         success: function(response) {
             if (response.completed === false) {
                 const logText = response.message.split(' - ')[1];

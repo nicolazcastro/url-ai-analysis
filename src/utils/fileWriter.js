@@ -1,8 +1,13 @@
 const fs = require('fs').promises;
 const path = require('path');
+let currentUser = null;
 
-async function createFile(url, outputDirectory) {
-    const fileName = `${encodeURIComponent(url)}.json`;
+function setCurrentUser(userId){
+    currentUser = userId;
+}
+
+async function createFile(fileKey, outputDirectory) {
+    const fileName = `${encodeURIComponent(currentUser)}_${encodeURIComponent(fileKey)}.json`;    
     const filePath = path.join(outputDirectory, fileName);
     try {
         await fs.access(filePath);
@@ -16,14 +21,21 @@ async function createFile(url, outputDirectory) {
             // Directory does not exist, create it
             await fs.mkdir(outputDirectory, { recursive: true });
         }
+        // Create the file
+        try {
+            await fs.writeFile(filePath, ''); // Empty file
+            return filePath;
+        } catch (fileError) {
+            throw new Error(`Failed to create file ${filePath}: ${fileError.message}`);
+        }
         // Return the new file path
         return filePath;
     }
 }
 
 async function writePartialData(data, outputDirectory) {
-    const mainUrlFileName = `${encodeURIComponent(data.url)}.json`;
-    const mainUrlFilePath = path.join(outputDirectory, mainUrlFileName);
+    const mainUrlFileName = encodeURIComponent(data.url);
+    const mainUrlFilePath = await createFile(mainUrlFileName, outputDirectory);
 
     try {
         let existingData = {};
@@ -64,57 +76,40 @@ async function writePartialData(data, outputDirectory) {
     }
 }
 
-async function deleteFileIfExists(url, outputDirectory) {
-    const filePath = await createFile(url, outputDirectory);
-    const logFilePath = outputDirectory + '/log.txt';
-    const resultFilePath = filePath.replace(".json", "-ai-result.json")
+async function deleteFileIfExists(userId, outputDirectory) {
+    const files = await fs.readdir(outputDirectory);
+    const userFiles = files.filter(file => file.startsWith(`${userId}_`));
 
-    try {
-        await fs.unlink(resultFilePath);
-        console.log(`Deleted file: ${resultFilePath}`);
-    } catch (error) {
-        // Ignore error if file does not exist
-    }
-
-    try {
-        await fs.unlink(logFilePath);
-        console.log(`Deleted file: ${logFilePath}`);
-    } catch (error) {
-        // Ignore error if file does not exist
-    }
-
-    try {
-        await fs.unlink(filePath);
-        console.log(`Deleted file: ${filePath}`);
-    } catch (error) {
-        // Ignore error if file does not exist
+    for (const file of userFiles) {
+        const filePath = path.join(outputDirectory, file);
+        try {
+            await fs.unlink(filePath);
+            console.log(`Deleted file: ${filePath}`);
+        } catch (error) {
+            console.error(`Error deleting file ${filePath}: ${error.message}`);
+        }
     }
 }
 
 async function writeAiResult(data, outputDirectory, url) {
-    const resultFilePath = `${outputDirectory}/${encodeURIComponent(url)}-ai-result.json`;
-    await fs.writeFile(resultFilePath, JSON.stringify(data, null, 2));
-    console.log(`AI analysis result stored in: ${resultFilePath}`);
+    const filePath = await createFile(url, outputDirectory);
+    await fs.writeFile(filePath, JSON.stringify(data, null, 2));
+    console.log(`AI analysis result stored in: ${filePath}`);
 }
+
 
 async function writeLog(messages, outputDirectory) {
-    const logFilePath = path.join(outputDirectory, 'log.txt');
-    let formattedMessages = Array.isArray(messages) ? messages : [messages];
-    formattedMessages = formattedMessages.map(message => `${new Date().toISOString()} - ${message}\n`);
+    const logFileName = `log.txt`;
+    const logFilePath = await createFile(logFileName, outputDirectory);
+    const formattedMessages = Array.isArray(messages) ? messages : [messages];
+    const logContent = formattedMessages.map(message => `${new Date().toISOString()} - ${message}\n`).join('');
 
-    return new Promise((resolve, reject) => {
-        try {
-            fs.appendFile(logFilePath, formattedMessages.join(''), (err) => {
-                if (err) {
-                    reject(err);
-                } else {
-                    resolve();
-                }
-            });
-        } catch (error) {
-            Console.log('Failed to write log');
-        }
-    });
+    try {
+        await fs.appendFile(logFilePath, logContent);
+        console.log(`Log appended to file: ${logFilePath}`);
+    } catch (error) {
+        console.error(`Error appending log to file ${logFilePath}: ${error.message}`);
+    }
 }
 
-module.exports = { writePartialData, deleteFileIfExists, writeAiResult, writeLog };
+module.exports = { writePartialData, deleteFileIfExists, writeAiResult, writeLog, setCurrentUser };

@@ -1,7 +1,10 @@
 const { analyze } = require('../services/urlAnalysisService');
+const { analyzeUrlWithVariations } = require('../utils/urlVariations');
+const {setCurrentUser } = require('../utils/fileWriter');
 const userService = require('../services/userService');
 const fs = require('fs').promises;
 let analysisCompleted = false; 
+const path = require('path');
 
 const analyzeUrl = async (req, res) => {
     const { url, userId } = req.body;
@@ -14,14 +17,14 @@ const analyzeUrl = async (req, res) => {
     
     if (!url) {
         return res.status(400).json({ message: 'Missing URL in request body' });
-    }
-    try {
-        await analyze(url);
-        analysisCompleted = true;    
+    }   
 
+    try {
+        setCurrentUser(userId);//for file writer
+        const analyzedUrl = await analyzeUrlWithVariations(url, analyze); // Pass the analyze function
+        analysisCompleted = true;
         await userService.updateCredit(userId, userCredit - 1);
-        
-        res.json({ message: 'Analysis finished' });
+        res.json({ message: 'Analysis finished', analyzedUrl });
     } catch (error) {
         console.error('Error processing URL:', error);
         res.status(500).json({ message: error.message });
@@ -29,12 +32,16 @@ const analyzeUrl = async (req, res) => {
 };
 
 const getResult = async (req, res) => {
-    const { url } = req.query;
+    const { url, userId } = req.query;
     const outputDirectory = process.env.OUTPUT_FOLDER;
-    const resultFilePath = `${outputDirectory}/${encodeURIComponent(url)}-ai-result.json`;
+
+    // Constructing file paths with userId
+    const resultFileName = `${encodeURIComponent(userId)}_${encodeURIComponent(url)}-ai-result.json`;
+    const logFileName = `${encodeURIComponent(userId)}_log.txt`;
+    const resultFilePath = path.join(outputDirectory, resultFileName);
+    const logFilePath = path.join(outputDirectory, logFileName);
 
     if (!analysisCompleted) {
-        const logFilePath = `${outputDirectory}/log.txt`;
         try {
             const logData = await fs.readFile(logFilePath, 'utf8');
             const logs = logData.trim().split('\n');
