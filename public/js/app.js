@@ -166,11 +166,11 @@ function setUserDataLogin(){
     toggleUserOptions(isLoggedIn);
 }
 
-function checkResult(requestUrl) {
+function checkResult() {
     $.ajax({
         url: 'http://localhost:3000/result',
         type: 'GET',
-        data: { url: requestUrl, userId: loggedUserId },
+        data: { userId: loggedUserId },
         success: function(response) {
             if (response.completed === false) {
                 const logText = response.message.split(' - ')[1];
@@ -195,7 +195,7 @@ function startCheckResult() {
             clearInterval(checkResultTimer);
             return;
         } else {
-            checkResult(url);
+            checkResult();
         }
     }, 2000);
 }

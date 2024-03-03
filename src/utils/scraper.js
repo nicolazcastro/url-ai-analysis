@@ -77,6 +77,7 @@ async function scrape(userId, url, depth, verbose, maxImages, maxLinksPerScrape,
                     console.log(logMessage);
                     writeLog(logMessage, outputDirectory);
                     const sublinkData = await scrape(userId, sublinkUrl, depth, verbose, maxImages, maxLinksPerScrape, outputDirectory, currentDepth + 1, linksScraped + 1, mainUrl);
+                    delete sublinkData.rawText;
                     data.sublinks = data.sublinks || [];
                     data.sublinks.push(sublinkData);
                     linksScraped++;

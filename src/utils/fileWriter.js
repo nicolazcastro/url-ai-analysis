@@ -6,8 +6,8 @@ function setCurrentUser(userId){
     currentUser = userId;
 }
 
-async function createFile(fileKey, outputDirectory) {
-    const fileName = `${encodeURIComponent(currentUser)}_${encodeURIComponent(fileKey)}.json`;    
+async function createFile(fileKey, outputDirectory, ext = 'json') {
+    const fileName = `${encodeURIComponent(currentUser)}_${encodeURIComponent(fileKey)}.${ext}`;    
     const filePath = path.join(outputDirectory, fileName);
     try {
         await fs.access(filePath);
@@ -28,14 +28,11 @@ async function createFile(fileKey, outputDirectory) {
         } catch (fileError) {
             throw new Error(`Failed to create file ${filePath}: ${fileError.message}`);
         }
-        // Return the new file path
-        return filePath;
     }
 }
 
 async function writePartialData(data, outputDirectory) {
-    const mainUrlFileName = encodeURIComponent(data.url);
-    const mainUrlFilePath = await createFile(mainUrlFileName, outputDirectory);
+    const mainUrlFilePath = await createFile(data.url, outputDirectory);
 
     try {
         let existingData = {};
@@ -91,16 +88,16 @@ async function deleteFileIfExists(userId, outputDirectory) {
     }
 }
 
-async function writeAiResult(data, outputDirectory, url) {
-    const filePath = await createFile(url, outputDirectory);
+async function writeAiResult(data, outputDirectory, fileName) {
+    const filePath = await createFile(fileName, outputDirectory);
     await fs.writeFile(filePath, JSON.stringify(data, null, 2));
     console.log(`AI analysis result stored in: ${filePath}`);
 }
 
 
 async function writeLog(messages, outputDirectory) {
-    const logFileName = `log.txt`;
-    const logFilePath = await createFile(logFileName, outputDirectory);
+    const logFileName = `log`;
+    const logFilePath = await createFile(logFileName, outputDirectory, 'txt');
     const formattedMessages = Array.isArray(messages) ? messages : [messages];
     const logContent = formattedMessages.map(message => `${new Date().toISOString()} - ${message}\n`).join('');
 
@@ -112,4 +109,4 @@ async function writeLog(messages, outputDirectory) {
     }
 }
 
-module.exports = { writePartialData, deleteFileIfExists, writeAiResult, writeLog, setCurrentUser };
+module.exports = { writePartialData, deleteFileIfExists, writeAiResult, writeLog, setCurrentUser, createFile };

@@ -24,6 +24,7 @@
     "openai": "^4.28.0",
     "openai-node": "^1.0.5",
     "puppeteer": "^13.1.0",
+    "redis": "^4.6.13",
     "sequelize": "^6.37.1",
     "sharp": "^0.33.2"
   },

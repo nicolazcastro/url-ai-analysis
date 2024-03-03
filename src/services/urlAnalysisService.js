@@ -3,7 +3,7 @@ const dotenv = require('dotenv');
 const scrape = require('../utils/scraper');
 const aiAnalyzer = require('../utils/aiAnalyzer'); // Include the AI analysis module
 const jsonProcessor = require('../utils/jsonProcessor'); // Include the JSON processing module
-const fileWriter = require('../utils/fileWriter'); // Include the fileWriter module
+const { createFile, writeAiResult} = require('../utils/fileWriter'); // Include the fileWriter module
 
 // Load environment variables from .env file
 dotenv.config();
@@ -20,22 +20,29 @@ async function analyze(url, userId){
 
     // Preprocess the JSON file
     try {
-        console.log('Pre processing JSON data.');
-        const filePath = `${outputDirectory}/${encodeURIComponent(url)}.json`;
-        const jsonData = await jsonProcessor.processJson(filePath);
-
-        // Send the JSON data to the AI analyzer for analysis
-        console.log('Sending data to AI for analisys.');
-        const response = await aiAnalyzer.processUrlData(jsonData);
-
-        console.log('AI analysis:');
-        console.log(response);
-
-        // Store the AI analysis result in a file
-        await fileWriter.writeAiResult(userId, response, outputDirectory, url);
+        const filePath = await createFile(url, outputDirectory);
+        await processAndAnalyzeData(filePath, outputDirectory);
     } catch (error) {
         console.error('Error during analysis:', error);
     }
 }
 
-module.exports = { analyze };
+async function processAndAnalyzeData(filePath, outputDirectory){
+    console.log('Pre processing JSON data.');
+    const jsonData = await jsonProcessor.processJson(filePath);
+
+    // Send the JSON data to the AI analyzer for analysis
+    console.log('Sending data to AI for analisys.');
+    const response = await aiAnalyzer.processUrlData(jsonData);
+
+    console.log('AI analysis:');
+    console.log(response);
+    await writeFinalResult(response, outputDirectory);
+}
+
+async function writeFinalResult(response, outputDirectory){
+    // Store the AI analysis result in a file
+    await writeAiResult(response, outputDirectory, url + "-ai-result");
+}
+
+module.exports = { analyze, writeFinalResult };
