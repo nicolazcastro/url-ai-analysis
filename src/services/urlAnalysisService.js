@@ -3,7 +3,7 @@ const dotenv = require('dotenv');
 const scrape = require('../utils/scraper');
 const aiAnalyzer = require('../utils/aiAnalyzer'); // Include the AI analysis module
 const jsonProcessor = require('../utils/jsonProcessor'); // Include the JSON processing module
-const { createFile, writeAiResult} = require('../utils/fileWriter'); // Include the fileWriter module
+const { createFile, writeAiResult, deleteFileIfExists} = require('../utils/fileWriter'); // Include the fileWriter module
 
 // Load environment variables from .env file
 dotenv.config();
@@ -21,13 +21,13 @@ async function analyze(url, userId){
     // Preprocess the JSON file
     try {
         const filePath = await createFile(url, outputDirectory);
-        await processAndAnalyzeData(filePath, outputDirectory);
+        await processAndAnalyzeData(url, filePath, outputDirectory);
     } catch (error) {
         console.error('Error during analysis:', error);
     }
 }
 
-async function processAndAnalyzeData(filePath, outputDirectory){
+async function processAndAnalyzeData(url, filePath, outputDirectory){
     console.log('Pre processing JSON data.');
     const jsonData = await jsonProcessor.processJson(filePath);
 
@@ -37,12 +37,15 @@ async function processAndAnalyzeData(filePath, outputDirectory){
 
     console.log('AI analysis:');
     console.log(response);
-    await writeFinalResult(response, outputDirectory);
+    await writeFinalResult(url, response, outputDirectory);
 }
 
-async function writeFinalResult(response, outputDirectory){
-    // Store the AI analysis result in a file
+async function writeFinalResult(url, response, outputDirectory){
     await writeAiResult(response, outputDirectory, url + "-ai-result");
 }
 
-module.exports = { analyze, writeFinalResult };
+async function deleteCachedFileIfExists(userId, outputDirectory){
+    await deleteFileIfExists(userId, outputDirectory);
+}
+
+module.exports = { analyze, writeFinalResult, deleteCachedFileIfExists };

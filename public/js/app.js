@@ -167,6 +167,7 @@ function setUserDataLogin(){
 }
 
 function checkResult() {
+    $('#result').html('');
     $.ajax({
         url: 'http://localhost:3000/result',
         type: 'GET',

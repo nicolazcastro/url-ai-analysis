@@ -7,3 +7,5 @@ url-output/
 
 # Environment variable file
 .env
+
+.vscode/.myRedis.redis
