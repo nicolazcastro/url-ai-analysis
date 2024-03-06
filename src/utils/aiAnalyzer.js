@@ -17,6 +17,21 @@ async function analyzeText(text) {
     return response;
 }
 
+async function analyzeSEO(text) {
+    const question = `Please analyze this data which was extracted from a URL and provide a detailed analysis for
+    optimization tool for digital marketers and SEO professionals. Analyze the web page, provide suggestions for improving content structure, 
+    keyword optimization, and image usage to enhance search engine visibility and user engagement. 
+    Give me specific examples of things that you found in the analized data that can be corrected and how. 
+    Dont give me generic SEO concepts.
+    Give me the answer in ` + analysisLanguage;
+    const response = await openai.chat.completions.create({
+        messages: [{ role: "system", content: question + '\n\n' + text }],
+        model: "gpt-3.5-turbo-0125",
+      });
+
+    return response;
+}
+
 function generateTextForAnalysis(data, accumulatedText = '') {
     let text = accumulatedText;
     for (const node of data) {
@@ -58,4 +73,9 @@ async function processUrlData(data) {
     return await analyzeText(text);
 }
 
-module.exports = { processUrlData };
+async function processURLDataForSEO(data) {
+    const text = generateTextForAnalysis([data]);
+    return await analyzeSEO(text);
+}
+
+module.exports = { processUrlData, processURLDataForSEO };

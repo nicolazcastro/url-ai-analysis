@@ -1,4 +1,4 @@
-async function analyzeUrlWithVariations(url, userId, analyze) {
+async function analyzeUrlWithVariations(url, userId, improveSeo, analyze) {
     const variations = [
         url, // Original URL
         `http://${url}`, // Add "http://" protocol
@@ -14,7 +14,7 @@ async function analyzeUrlWithVariations(url, userId, analyze) {
     let error = null;
     for (const variation of variations) {
         try {
-            await analyze(variation, userId);
+            await analyze(variation, userId, improveSeo);
             return variation;
         } catch (err) {
             error = err;

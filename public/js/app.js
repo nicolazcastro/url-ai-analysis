@@ -3,6 +3,7 @@ let isCompleted = false;
 let url = '';
 let loggedUserId = '';
 let loggedUserEmail = '';
+let seoImprovement = false;
 
 $(document).ready(function() {
 
@@ -35,12 +36,13 @@ $(document).ready(function() {
         $('#result').text('Analysis started. Please wait...');
         
         const userId = getLoggedUserId();
+        seoImprovement = $("#seo-inprovement").val();
 
         $.ajax({
             url: 'http://localhost:3000/analyze',
             type: 'POST',
             contentType: 'application/json',
-            data: JSON.stringify({ url: url, userId: userId }),
+            data: JSON.stringify({ url: url, userId: userId, seoImprovement: seoImprovement }),
             success: function(response) {
                 console.log(response);
             },
@@ -151,8 +153,16 @@ $(document).ready(function() {
         }
     });
 
+    $('#result').val('');
+    $('#seo-result').val('');
+    $('#url').val('');    
+
     setUserDataLogin();
 });
+
+function setSeo(seo){
+    seoImprovement = seo === 0 ? false : true;
+}
 
 function toggleUserOptions(isLoggedIn) {
     if (isLoggedIn) {
@@ -181,18 +191,24 @@ function setUserDataLogin(){
 }
 
 function checkResult() {
-    $('#result').html('');
+    $('#result').val('');
+    $('#seo-result').val('');
+    seoImprovement = $("#seo-inprovement").val();
     $.ajax({
         url: 'http://localhost:3000/result',
         type: 'GET',
-        data: { userId: loggedUserId },
+        data: { userId: loggedUserId, seoImprovement: seoImprovement},
         success: function(response) {
             if (response.completed === false) {
                 const logText = response.message.split(' - ')[1];
                 $('#result').html(logText);
             } else {
                 isCompleted = true
-                $('#result').html(response);
+                const analysisResult = response.analysisResult;
+                const analysisSeoResult = response.analysisSeoResult;
+
+                $('#result').val(analysisResult);
+                $('#seo-result').val(analysisSeoResult);
             }
         },
         error: function(err) {

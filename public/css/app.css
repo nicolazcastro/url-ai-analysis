@@ -4,6 +4,17 @@ body {
     padding: 20px;
 }
 
+.textarea-container {
+    display: flex;
+}
+
+.textarea-container textarea {
+    width: 50%;
+    /* Adjust width as needed */
+    margin-right: 10px;
+    /* Optional: Add margin between text areas */
+}
+
 .container {
     max-width: 500px;
     margin: auto;

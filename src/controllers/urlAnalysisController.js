@@ -11,11 +11,13 @@ const getRedisClient = require('../utils/cache');
 
 let analysisCompleted = false; 
 let analyzedUrl = '';
+let improveSeo  = false;
 
 const outputDirectory = process.env.OUTPUT_FOLDER || './url-output'; // Output directory
+const seoImproveFileString = process.env.SEO_IMPROVE_FILE_STRING || '-seo-improve'; 
 
 const analyzeUrl = async (req, res) => {
-    const { url, userId } = req.body;
+    const { url, userId, seoImprovement } = req.body;
     const redisTTL = process.env.REDIS_TTL;
 
     const userCredit = await userService.getCredit(userId);
@@ -37,8 +39,10 @@ const analyzeUrl = async (req, res) => {
 
         analizedResultUrl = storedValue !== null ? storedValue.analyzedUrl : '';
 
+        improveSeo = (seoImprovement === true || seoImprovement == '1') ? true : false;
+
         if (!analizedResultUrl) {
-            analyzedUrl = await analyzeUrlWithVariations(url, userId, analyze);
+            analyzedUrl = await analyzeUrlWithVariations(url, userId, improveSeo, analyze);
 
             const resultFileName = `${encodeURIComponent(userId)}_${encodeURIComponent(analyzedUrl)}-ai-result.json`;
             const resultFilePath = path.join(outputDirectory, resultFileName);
@@ -48,6 +52,17 @@ const analyzeUrl = async (req, res) => {
             const stringifiedObject = JSON.stringify(objectToStore);
             await client.set(url, stringifiedObject, 'EX', redisTTL);
             console.log('Analysis result stored in cache');
+
+            if(improveSeo === true){
+                const resultFileName = `${encodeURIComponent(userId)}_${encodeURIComponent(analyzedUrl)}${seoImproveFileString}-ai-result.json`;
+                const resultFilePath = path.join(outputDirectory, resultFileName);
+                const jsonSeoString = await fs.readFile(resultFilePath, 'utf8');
+    
+                const objectToStore = { 'analyzedUrl': jsonSeoString, 'finalUrl': analyzedUrl};
+                const stringifiedObject = JSON.stringify(objectToStore);
+                await client.set(url + seoImproveFileString, stringifiedObject, 'EX', redisTTL);
+                console.log('SEO Analysis result stored in cache');
+            }
         } else {
             const storedUrl = storedValue !== null ? storedValue.finalUrl : '';
             const keyUrl = storedUrl !== null ? storedUrl : url;
@@ -55,8 +70,16 @@ const analyzeUrl = async (req, res) => {
             await deleteCachedFileIfExists(userId, outputDirectory);
             await writeFinalResult(keyUrl, JSON.parse(analizedResultUrl), outputDirectory);
             console.log('Analysis result retrieved from cache');
-        }
 
+            if(improveSeo === true){
+                const storedSeoValue = await getObjectFromRedis(client, url + seoImproveFileString);
+                const storedSeoUrl = storedSeoValue !== null ? storedSeoValue.finalUrl : '';
+                const analyzeSeoUrl = storedSeoValue !== null ? storedSeoValue.analyzedUrl : '';
+                const keySeoUrl = storedSeoUrl !== null ? storedSeoUrl + seoImproveFileString : url + seoImproveFileString;
+                await writeFinalResult(keySeoUrl, JSON.parse(analyzeSeoUrl), outputDirectory);
+                console.log('SEO Analysis result retrieved from cache');
+            }
+        }
         client.quit();
 
         analysisCompleted = true;
@@ -82,8 +105,10 @@ async function getObjectFromRedis(client, key) {
 }
 
 const getResult = async (req, res) => {
-    const { userId } = req.query;
+    const { userId, seoImprovement } = req.query;
     const outputDirectory = process.env.OUTPUT_FOLDER;
+
+    improveSeo = (seoImprovement === true || seoImprovement == '1') ? true : false;
 
     // Constructing file paths with userId
     const resultFileName = `${encodeURIComponent(userId)}_${encodeURIComponent(analyzedUrl)}-ai-result.json`;
@@ -106,8 +131,18 @@ const getResult = async (req, res) => {
             const jsonString = await fs.readFile(resultFilePath, 'utf8');
             const result = JSON.parse(jsonString);
             const content = result.choices[0].message.content; // Get the "content" node
+            let contentSeo  = '';
+
+            if(improveSeo === true) {
+                const resultSeoFileName = `${encodeURIComponent(userId)}_${encodeURIComponent(analyzedUrl)}${seoImproveFileString}-ai-result.json`;
+                const resultSeoFilePath = path.join(outputDirectory, resultSeoFileName);
+                const jsonSeoString = await fs.readFile(resultSeoFilePath, 'utf8');
+                const resultSeo = JSON.parse(jsonSeoString);
+                contentSeo = resultSeo.choices[0].message.content; // Get the "content" node
+            }
+
             await deleteCachedFileIfExists(userId, outputDirectory);
-            res.send(`<div>${content}</div>`); // Display the content in a div
+            res.json({ analysisResult: content, completed: true, analysisSeoResult: contentSeo });
         } catch (err) {
             console.log('Error reading file:', err);
             res.json({ message: 'Analysis completed but no result file available yet. Processing...', completed: false, analysisCompleted: analysisCompleted });
