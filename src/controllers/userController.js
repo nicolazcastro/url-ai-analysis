@@ -1,6 +1,7 @@
 const userService = require('../services/userService');
 const { generateToken } = require('../services/authService');
-const bcrypt = require('bcrypt');
+const { googleLoginCallback } = require('../services/authService'); // Import Google login callback function from authService
+
 
 const registerUser = async (req, res) => {
     const { email, password } = req.body;
@@ -30,4 +31,4 @@ const loginUser = async (req, res) => {
     }
 };
 
-module.exports = { registerUser, loginUser };
+module.exports = { registerUser, loginUser, googleLoginCallback };

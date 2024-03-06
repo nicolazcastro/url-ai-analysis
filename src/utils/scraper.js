@@ -55,7 +55,6 @@ async function scrape(userId, url, depth, verbose, maxImages, maxLinksPerScrape,
         writeLog(logMessage, outputDirectory);
     }
 
-/*
     const images = await page.$$eval('img', imgs => imgs.map(img => img.src));
     const analyzedImages = await analyzeImages(images, maxImages);
 
@@ -65,8 +64,6 @@ async function scrape(userId, url, depth, verbose, maxImages, maxLinksPerScrape,
             description: analyzedImage.prediction
         };
     });
-    */
-    data.images = [];
 
     if (currentDepth < depth && linksScraped < maxLinksPerScrape) {
         const sublinks = await page.$$eval('a', links => links.map(link => link.href));

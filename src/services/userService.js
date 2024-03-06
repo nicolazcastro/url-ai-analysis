@@ -5,7 +5,15 @@ const bcrypt = require('bcrypt');
 
 require('dotenv').config();
 
-const apiKey = process.env.DB_RETRIES;
+const registerUserFromGoogle = async (email, googleId) => {
+    try {
+        // Create a new user with the provided email and Google ID
+        const newUser = await User.create({ email, googleId });
+        return newUser;
+    } catch (error) {
+        throw new Error('Failed to register user from Google');
+    }
+};
 
 const registerUser = async (email, password) => {
     const hashedPassword = await bcrypt.hash(password, 10);
@@ -98,4 +106,4 @@ const getCredit = async (userId) => {
     }
 };
 
-module.exports = { registerUser, loginUser, checkUserExistence, updateCredit, getCredit };
+module.exports = { registerUser, loginUser, checkUserExistence, updateCredit, getCredit, registerUserFromGoogle };

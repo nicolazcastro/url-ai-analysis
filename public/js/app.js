@@ -6,6 +6,20 @@ let loggedUserEmail = '';
 
 $(document).ready(function() {
 
+    const urlParams = new URLSearchParams(window.location.search);
+    const googleAuthToken = urlParams.get('token');
+    if (googleAuthToken) {
+        // Store JWT token in localStorage or sessionStorage
+        localStorage.setItem('token', googleAuthToken); // Example: Store in localStorage
+        // Redirect user to desired page or perform other actions
+        window.location.href = '/'; // Redirect to homepage after successful login
+    }
+
+    $('#googleSignInBtn').click(function() {
+        // Redirect to Google OAuth authentication page
+        window.location.href = '/auth/google';
+    });
+
     $('.alert-close-btn').click(function() {
         hideAlert();
     });

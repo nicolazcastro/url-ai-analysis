@@ -1,3 +1,5 @@
+require('dotenv').config();
+
 const { analyze, writeFinalResult, deleteCachedFileIfExists } = require('../services/urlAnalysisService');
 const { analyzeUrlWithVariations } = require('../utils/urlVariations');
 const { setCurrentUser } = require('../utils/fileWriter');
@@ -14,6 +16,7 @@ const outputDirectory = process.env.OUTPUT_FOLDER || './url-output'; // Output d
 
 const analyzeUrl = async (req, res) => {
     const { url, userId } = req.body;
+    const redisTTL = process.env.REDIS_TTL;
 
     const userCredit = await userService.getCredit(userId);
 
@@ -24,7 +27,6 @@ const analyzeUrl = async (req, res) => {
     if (!url) {
         return res.status(400).json({ message: 'Missing URL in request body' });
     }   
-
 
     try {
         setCurrentUser(userId);//for file writer
@@ -44,7 +46,7 @@ const analyzeUrl = async (req, res) => {
 
             const objectToStore = { 'analyzedUrl': jsonString, 'finalUrl': analyzedUrl};
             const stringifiedObject = JSON.stringify(objectToStore);
-            await client.set(url, stringifiedObject);
+            await client.set(url, stringifiedObject, 'EX', redisTTL);
             console.log('Analysis result stored in cache');
         } else {
             const storedUrl = storedValue !== null ? storedValue.finalUrl : '';
@@ -54,6 +56,8 @@ const analyzeUrl = async (req, res) => {
             await writeFinalResult(keyUrl, JSON.parse(analizedResultUrl), outputDirectory);
             console.log('Analysis result retrieved from cache');
         }
+
+        client.quit();
 
         analysisCompleted = true;
         await userService.updateCredit(userId, userCredit - 1);
