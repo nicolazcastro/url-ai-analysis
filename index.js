@@ -1,37 +1,30 @@
+// index.js del frontend
+
 const express = require('express');
 const bodyParser = require('body-parser');
 const dotenv = require('dotenv');
-const routes = require('./routes/routes');
-const session = require('express-session');
-const passport = require('passport');
-const crypto = require('crypto');
+const httpProxy = require('http-proxy');
+const userRoutes = require('./routes/userRoutes');
 
 dotenv.config();
 
 const app = express();
 const port = process.env.PORT || 3000;
 
-// Generate a secure random string of 32 characters
-const secretKey = crypto.randomBytes(32).toString('hex');
-
-// Configure express-session middleware
-app.use(session({
-    secret: secretKey,
-    resave: false,
-    saveUninitialized: false
-}));
-
-// Initialize Passport and restore authentication state, if any, from the session
-app.use(passport.initialize());
-app.use(passport.session());
-
-
 app.use(bodyParser.json());
 app.use(express.static('public'));
-app.use('/', routes); // Use the routes defined in the routes folder
+
+// Configuración del proxy
+const proxy = httpProxy.createProxyServer();
+const userServiceUrl = process.env.USER_SERVICE_URL || 'http://localhost:3001'; // URL del microservicio de usuarios
+
+// Redirigir las solicitudes relacionadas con usuarios al microservicio correspondiente
+app.use('/users', (req, res) => {
+    proxy.web(req, res, { target: userServiceUrl });
+});
 
 app.get('/favicon.ico', (req, res) => res.status(204));
 
 app.listen(port, () => {
-    console.log(`Server running at http://localhost:${port}`);
+    console.log(`Frontend server running at http://localhost:${port}`);
 });
