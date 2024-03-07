@@ -8,9 +8,8 @@ const authService = require('../src/services/authService');
 // Existing routes
 router.post('/user/register', userController.registerUser);
 router.post('/user/login', userController.loginUser);
-router.post('/analyze', authMiddleware, urlAnalysisController.analyzeUrl);
-router.post('/credit', authMiddleware, accountController.updateCredit);
-router.get('/credit/:userId', authMiddleware, accountController.getCredit);
+router.post('/user/credit', authMiddleware, accountController.updateCredit);
+router.get('/user/credit/:userId', authMiddleware, accountController.getCredit);
 
 // Google Sign-In routes
 router.get('/auth/google', authService.googleLoginRedirect);
