@@ -1,16 +1,14 @@
 const express = require('express');
 const router = express.Router();
 const userController = require('../src/controllers/userController');
-const urlAnalysisController = require('../src/controllers/urlAnalysisController');
 const accountController = require('../src/controllers/accountController');
 const { authMiddleware } = require('../src/middelwares/authMiddleware');
 const authService = require('../src/services/authService');
 
 // Existing routes
-router.post('/register', userController.registerUser);
-router.post('/login', userController.loginUser);
+router.post('/user/register', userController.registerUser);
+router.post('/user/login', userController.loginUser);
 router.post('/analyze', authMiddleware, urlAnalysisController.analyzeUrl);
-router.get('/result', authMiddleware, urlAnalysisController.getResult);
 router.post('/credit', authMiddleware, accountController.updateCredit);
 router.get('/credit/:userId', authMiddleware, accountController.getCredit);
 
