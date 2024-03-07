@@ -12,7 +12,7 @@ router.post('/user/credit', authMiddleware, accountController.updateCredit);
 router.get('/user/credit/:userId', authMiddleware, accountController.getCredit);
 
 // Google Sign-In routes
-router.get('/auth/google', authService.googleLoginRedirect);
-router.get('/auth/google/callback', authService.googleLoginCallback);
+router.get('/user/auth/google', authService.googleLoginRedirect);
+router.get('/user/auth/google/callback', authService.googleLoginCallback);
 
 module.exports = router;
