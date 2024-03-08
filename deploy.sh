@@ -44,8 +44,14 @@ for branch in "${branches[@]}"; do
     # Change directory to the branch directory
     cd "$branch_dir" || exit
 
-    # Copy the content of the project to the branch directory, excluding the deploy script itself
-    rsync -av --exclude='deploy.sh' --exclude='.git' --exclude='.gitignore' --exclude='node_modules' --exclude='.*' ../../ "$branch_dir"
+    # Check if node_modules directory exists in the target branch directory
+    if [ -d "node_modules" ]; then
+        # If node_modules directory exists, exclude it from rsync
+        rsync -av --exclude='deploy.sh' --exclude='.git' --exclude='.gitignore' --exclude='.*' --exclude='node_modules' ../../ "$branch_dir"
+    else
+        # If node_modules directory does not exist, include it in rsync
+        rsync -av --exclude='deploy.sh' --exclude='.git' --exclude='.gitignore' --exclude='.*' ../../ "$branch_dir"
+    fi
 
     # Update the branch from the repository
     git fetch origin "$branch"
@@ -56,10 +62,9 @@ for branch in "${branches[@]}"; do
 
     echo "Content copied to: $CURRENT_DIR/deploy/$branch_dir"
     echo "Deployed branch: $branch"
-    echo  # Space after the comment
 
     # Change directory back to the deploy directory
-    cd .. || exit
+    cd ..
 done
 
 # Change directory back to the original directory
