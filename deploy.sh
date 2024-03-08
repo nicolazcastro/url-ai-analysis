@@ -70,4 +70,3 @@ git checkout frontend
 
 echo "Deployed the following branches:"
 echo "${branches[*]}"
-
