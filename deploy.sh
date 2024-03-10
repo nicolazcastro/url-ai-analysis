@@ -36,6 +36,11 @@ for branch in "${branches[@]}"; do
     echo ""
     echo ""
     echo "Deploying branch: $branch"
+
+    # Checkout the branch
+    echo ""
+    echo "Switching to branch: $branch"
+    git checkout "$branch"
     
     # Convert branch name to a valid directory name
     branch_dir=$(echo "$branch" | tr '/' '-')
@@ -43,26 +48,26 @@ for branch in "${branches[@]}"; do
     # Create directory for the branch if it doesn't exist
     mkdir -p "$branch_dir"
 
+    echo ""
+    echo "Branch target deploy dir is: $branch_dir"
+
     # Change directory to the branch directory
     cd "$branch_dir" || exit
 
     echo ""
     echo "copying files $branch to $branch_dir"
-    rsync -av --exclude='deploy.sh' --exclude='.git' --exclude='.gitignore' --exclude='node_modules' ../../ "$branch_dir"
-   
+    rsync -av --exclude='deploy.sh' --exclude='.git' --exclude='.gitignore' --exclude='deploy' --exclude='node_modules' --exclude='package-lock.json' ../../ .
 
-    # Update the branch from the repository
+ 
+     # Clear npm cache in the target branch directory
     echo ""
-    echo "fetching $branch"
-    git fetch origin "$branch"
-    echo ""
-    echo "reseting origin/$branch"
-    git reset --hard "origin/$branch"
+    echo "Cleaning npm cache in $branch_dir"
+    npm cache clean --force || true  # Use `|| true` to prevent script failure if cache clean fails
 
     # Install dependencies
     echo ""
     echo "running install --force"
-    npm install --force
+    NODE_PATH="./node_modules" npm install --force
 
     echo "Content copied to: $CURRENT_DIR/deploy/$branch_dir"
     echo "Deployed branch: $branch"
