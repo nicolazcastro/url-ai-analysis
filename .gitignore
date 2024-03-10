@@ -9,4 +9,3 @@ url-output/
 .env
 
 .vscode/.myRedis.redis
-deploy/
