@@ -56,7 +56,7 @@ for branch in "${branches[@]}"; do
 
     echo ""
     echo "copying files $branch to $branch_dir"
-    rsync -av --exclude='.env' --exclude='deploy.sh' --exclude='.git' --exclude='.gitignore' --exclude='deploy' --exclude='node_modules' --exclude='package-lock.json' ../../ .
+    rsync -av --exclude='*.env' --exclude='deploy.sh' --exclude='.git' --exclude='.gitignore' --exclude='deploy' --exclude='node_modules' --exclude='package-lock.json' ../../ .
 
     # Check if branch-specific .env file exists, if so, copy it as .env
     if [ -f "../../${branch//-/}.env" ]; then
