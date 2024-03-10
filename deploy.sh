@@ -33,6 +33,8 @@ fi
 
 # Loop through each selected branch
 for branch in "${branches[@]}"; do
+    echo ""
+    echo ""
     echo "Deploying branch: $branch"
     
     # Convert branch name to a valid directory name
@@ -44,20 +46,22 @@ for branch in "${branches[@]}"; do
     # Change directory to the branch directory
     cd "$branch_dir" || exit
 
-    # Check if node_modules directory exists in the target branch directory
-    if [ -d "node_modules" ]; then
-        # If node_modules directory exists, exclude it from rsync
-        rsync -av --exclude='deploy.sh' --exclude='.git' --exclude='.gitignore' --exclude='.*' --exclude='node_modules' ../../ "$branch_dir"
-    else
-        # If node_modules directory does not exist, include it in rsync
-        rsync -av --exclude='deploy.sh' --exclude='.git' --exclude='.gitignore' --exclude='.*' ../../ "$branch_dir"
-    fi
+    echo ""
+    echo "copying files $branch to $branch_dir"
+    rsync -av --exclude='deploy.sh' --exclude='.git' --exclude='.gitignore' --exclude='node_modules' ../../ "$branch_dir"
+   
 
     # Update the branch from the repository
+    echo ""
+    echo "fetching $branch"
     git fetch origin "$branch"
+    echo ""
+    echo "reseting origin/$branch"
     git reset --hard "origin/$branch"
 
     # Install dependencies
+    echo ""
+    echo "running install --force"
     npm install --force
 
     echo "Content copied to: $CURRENT_DIR/deploy/$branch_dir"
