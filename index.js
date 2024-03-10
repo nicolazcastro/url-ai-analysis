@@ -30,8 +30,6 @@ app.use(bodyParser.json());
 app.use(express.static('public'));
 app.use('/', routes); // Use the routes defined in the routes folder
 
-app.get('/favicon.ico', (req, res) => res.status(204));
-
 app.listen(port, () => {
     console.log(`Server running at http://localhost:${port}`);
 });
