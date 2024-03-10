@@ -22,7 +22,7 @@
         {
             "type": "node",
             "request": "launch",
-            "name": "Launch Web Server",
+            "name": "Launch  Web Server",
             "skipFiles": [
                 "<node_internals>/**",
                 "url-output/**/*"
@@ -35,6 +35,44 @@
             "env": {
                 "NODE_ENV": "development"
             }
+        },
+        {
+            "type": "node",
+            "request": "launch",
+            "name": "Launch User Microservice",
+            "skipFiles": [
+                "<node_internals>/**",
+                "url-output/**/*"
+            ],
+            "runtimeExecutable": "node",
+            "runtimeArgs": [
+                "--inspect=9229",
+                "${workspaceFolder}/deploy/frontend/index.js"
+            ],
+            "env": {
+                "NODE_ENV": "development"
+            },
+            "localRoot": "${workspaceFolder}",
+            "remoteRoot": "/Users/nicolascastro/Development/url-ai-analysis/deploy/microservice-user"
+        },
+        {
+            "type": "node",
+            "request": "launch",
+            "name": "Launch FrontEnd Microservice",
+            "skipFiles": [
+                "<node_internals>/**",
+                "url-output/**/*"
+            ],
+            "runtimeExecutable": "node",
+            "runtimeArgs": [
+                "--inspect=9229",
+                "${workspaceFolder}/index.js"
+            ],
+            "env": {
+                "NODE_ENV": "development"
+            },
+            "localRoot": "${workspaceFolder}",
+            "remoteRoot": "/Users/nicolascastro/Development/url-ai-analysis/deploy/frontend"
         }
     ]
 }

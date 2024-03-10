@@ -54,18 +54,10 @@ for branch in "${branches[@]}"; do
     # Change directory to the branch directory
     cd "$branch_dir" || exit
 
-    # Modify launch.json
-    sed -i '' "s/\"name\": \"Launch Web Server\"/\"name\": \"Launch $branch Web Server\"/" .vscode/launch.json
-
-    # Add localRoot and remoteRoot properties
-    sed -i '' '/"type": "node",/,/"env": {/ {
-        /"skipFiles": \[/a\
-        \t"localRoot": "${workspaceFolder}",\
-        \t"remoteRoot": "/path/to/deployed/folder",'}' .vscode/launch.json
-
     echo ""
     echo "copying files $branch to $branch_dir"
-    rsync -av --exclude='*.env' --exclude='deploy.sh' --exclude='.git' --exclude='.gitignore' --exclude='deploy' --exclude='node_modules' --exclude='package-lock.json' ../../ .
+    rsync -av --exclude='.vscode/*' --exclude='*.env' --exclude='deploy.sh' --exclude='.git' --exclude='.gitignore' --exclude='deploy' --exclude='node_modules' --exclude='package-lock.json' ../../ .
+
 
     # Check if branch-specific .env file exists, if so, copy it as .env
     if [ -f "../../${branch//-/}.env" ]; then
