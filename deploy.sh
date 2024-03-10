@@ -56,9 +56,16 @@ for branch in "${branches[@]}"; do
 
     echo ""
     echo "copying files $branch to $branch_dir"
-    rsync -av --exclude='deploy.sh' --exclude='.git' --exclude='.gitignore' --exclude='deploy' --exclude='node_modules' --exclude='package-lock.json' ../../ .
+    rsync -av --exclude='.env' --exclude='deploy.sh' --exclude='.git' --exclude='.gitignore' --exclude='deploy' --exclude='node_modules' --exclude='package-lock.json' ../../ .
 
- 
+    # Check if branch-specific .env file exists, if so, copy it as .env
+    if [ -f "../../${branch//-/}.env" ]; then
+        cp "../../${branch//-/}.env" .env
+        echo ".env file copied"
+    else
+        echo "No .env file found for branch: $branch"
+    fi
+
      # Clear npm cache in the target branch directory
     echo ""
     echo "Cleaning npm cache in $branch_dir"

@@ -1,10 +1,13 @@
 const express = require('express');
 const router = express.Router();
 const httpProxy = require('http-proxy');
+const dotenv = require('dotenv');
+
+dotenv.config();
 
 const proxy = httpProxy.createProxyServer();
-const userServiceUrl = 'http://localhost:3001'; // URL of the user microservice
-const urlAnalysisServiceUrl = 'http://localhost:3002'; // URL of the user microservice
+const userServiceUrl = process.env.USER_SERVICE_URL || 'http://localhost:3001'; // user microservice URL
+const urlAnalysisServiceUrl = process.env.ANALYSIS_SERVICE_URL || 'http://localhost:3002'; // analysis microservice URL
 // Define other microservice URLs as needed
 
 // Route definitions
