@@ -47,13 +47,13 @@
             "runtimeExecutable": "node",
             "runtimeArgs": [
                 "--inspect=9229",
-                "${workspaceFolder}/deploy/frontend/index.js"
+                "${workspaceFolder}/deploy/microservices-user/index.js"
             ],
             "env": {
                 "NODE_ENV": "development"
             },
             "localRoot": "${workspaceFolder}",
-            "remoteRoot": "/Users/nicolascastro/Development/url-ai-analysis/deploy/microservice-user"
+            "remoteRoot": "/Users/nicolascastro/Development/url-ai-analysis/deploy/microservices-user"
         },
         {
             "type": "node",
@@ -66,7 +66,7 @@
             "runtimeExecutable": "node",
             "runtimeArgs": [
                 "--inspect=9229",
-                "${workspaceFolder}/index.js"
+                "${workspaceFolder}/deploy/frontend/index.js"
             ],
             "env": {
                 "NODE_ENV": "development"

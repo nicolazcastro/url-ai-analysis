@@ -13,7 +13,30 @@ mkdir -p deploy
 cd deploy || exit
 
 # Check if the user wants to deploy all branches or specific ones
-if [ "$1" == "all" ]; then
+deploy_all=false
+install_dependencies=false
+
+# Loop through command-line arguments
+while [[ $# -gt 0 ]]; do
+    key="$1"
+    case $key in
+    -i)
+        install_dependencies=true
+        shift
+        ;;
+    -all)
+        deploy_all=true
+        shift
+        ;;
+    *)
+        echo "Unknown option: $key"
+        exit 1
+        ;;
+    esac
+done
+
+# Get branch names
+if [ "$deploy_all" = true ]; then
     # Get all branch names
     branches=$(git branch --format='%(refname:short)')
 else
@@ -58,24 +81,32 @@ for branch in "${branches[@]}"; do
     echo "copying files $branch to $branch_dir"
     rsync -av --exclude='.vscode/*' --exclude='*.env' --exclude='deploy.sh' --exclude='.git' --exclude='.gitignore' --exclude='deploy' --exclude='node_modules' --exclude='package-lock.json' ../../ .
 
+    # Replace "/" with "-" in the branch name for the file path
+    branch_file_name=$(echo "$branch" | tr '/' '-')
+    echo "branch_file_name: $branch_file_name"
 
-    # Check if branch-specific .env file exists, if so, copy it as .env
-    if [ -f "../../${branch//-/}.env" ]; then
-        cp "../../${branch//-/}.env" .env
+    # Construct the file path for the branch-specific .env file
+    branch_env_file="../../${branch_file_name}.env"
+    echo "branch_file_name: $branch_env_file"
+
+    if [ -f "$branch_env_file" ]; then
+        cp "$branch_env_file" .env
         echo ".env file copied"
     else
         echo "No .env file found for branch: $branch"
     fi
 
-     # Clear npm cache in the target branch directory
-    echo ""
-    echo "Cleaning npm cache in $branch_dir"
-    npm cache clean --force || true  # Use `|| true` to prevent script failure if cache clean fails
+    # Install dependencies if specified
+    if [ "$install_dependencies" = true ]; then
+        # Clear npm cache in the target branch directory
+        echo ""
+        echo "Cleaning npm cache in $branch_dir"
+        npm cache clean --force || true  # Use `|| true` to prevent script failure if cache clean fails
 
-    # Install dependencies
-    echo ""
-    echo "running install --force"
-    NODE_PATH="./node_modules" npm install --force
+        echo ""
+        echo "Running npm install in $branch_dir"
+        NODE_PATH="./node_modules" npm install --force
+    fi
 
     echo "Content copied to: $CURRENT_DIR/deploy/$branch_dir"
     echo "Deployed branch: $branch"
