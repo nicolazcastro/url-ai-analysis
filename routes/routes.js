@@ -11,11 +11,11 @@ const urlAnalysisServiceUrl = process.env.ANALYSIS_SERVICE_URL || 'http://localh
 // Define other microservice URLs as needed
 
 // Route definitions
-router.post('/users/register', (req, res) => {
+router.post('/user/register', (req, res) => {
     proxy.web(req, res, { target: userServiceUrl });
 });
 
-router.post('/users/login', (req, res) => {
+router.post('/user/login', (req, res) => {
     proxy.web(req, res, { target: userServiceUrl });
 });
 

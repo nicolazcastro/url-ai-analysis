@@ -19,7 +19,7 @@ const userServiceUrl = process.env.USER_SERVICE_URL || 'http://localhost:3001'; 
 const urlAnalysisServiceUrl = process.env.ANALYSIS_SERVICE_URL || 'http://localhost:3002'; // analysis microservice URL
 
 // Redirigir las solicitudes relacionadas con usuarios al microservicio correspondiente
-app.use('/users', (req, res) => {
+app.use('/user', (req, res) => {
     proxy.web(req, res, { target: userServiceUrl });
 });
 
