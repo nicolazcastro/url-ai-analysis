@@ -6,7 +6,7 @@ web_modules/
 url-output/
 
 # Environment variable file
-.env
+*.env
 
 .vscode/.myRedis.redis
 deploy/
