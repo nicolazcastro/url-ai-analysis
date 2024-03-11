@@ -18,12 +18,12 @@ $(document).ready(function() {
         window.location.href = '/'; // Redirect to homepage after successful login
     }
 
-    $('#googleSignInBtn').click(function() {
+    $('#googleSignInBtn').on('click', function() {
         // Redirect to Google OAuth authentication page
         window.location.href = '/auth/google';
     });
 
-    $('.alert-close-btn').click(function() {
+    $('.alert-close-btn').on('click', function() {
         hideAlert();
     });
 
@@ -31,7 +31,7 @@ $(document).ready(function() {
         jqXHR.setRequestHeader('Authorization', 'Bearer ' + getToken());
     });
         
-    $('#analyzeBtn').click(function() {
+    $('#analyzeBtn').on('click', function() {
         console.log("Starting analysis");
         isCompleted = false
         url = $('#url').val();
@@ -56,11 +56,11 @@ $(document).ready(function() {
         startCheckResult();
     });
 
-    $('#loginSubmitBtn').click(function(event) {
+    $('#loginSubmitBtn').on('click', function(event) {
         event.preventDefault();
         const email = $('#loginEmail').val();
         const password = $('#loginPassword').val();
-    
+        console.log('click en login button');
         $.ajax({
             url: userServiceBaseUrl + 'login',
             type: 'POST',
@@ -78,7 +78,7 @@ $(document).ready(function() {
         });
     });
 
-    $('#registerSubmitBtn').click(function(event) {
+    $('#registerSubmitBtn').on('click', function(event) {
         event.preventDefault();
         const username = $('#registerUsername').val();
         const email = $('#registerEmail').val();
@@ -113,7 +113,7 @@ $(document).ready(function() {
         logout();
     });
 
-    $('#updateCreditBtn').click(function() {
+    $('#updateCreditBtn').on('click', function() {
         const creditAmount = $('#creditInput').val();
         
         if (!validateCreditInput(creditAmount)) {
@@ -138,7 +138,7 @@ $(document).ready(function() {
         });
     });
 
-    $('#manageCreditBtn').click(function() {
+    $('#manageCreditBtn').on('click', function() {
         console.log("Button clicked");
         $('#creditErrorMsg').text('');
         $('#creditInput').val('');
