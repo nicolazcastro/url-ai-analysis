@@ -5,6 +5,7 @@ const routes = require('./routes/routes');
 const session = require('express-session');
 const passport = require('passport');
 const crypto = require('crypto');
+const cors = require('cors');
 
 dotenv.config();
 
@@ -13,6 +14,8 @@ const port = process.env.PORT || 3000;
 
 // Generate a secure random string of 32 characters
 const secretKey = crypto.randomBytes(32).toString('hex');
+
+app.use(cors());
 
 // Configure express-session middleware
 app.use(session({
