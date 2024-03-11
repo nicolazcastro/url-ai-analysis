@@ -4,6 +4,8 @@ let url = '';
 let loggedUserId = '';
 let loggedUserEmail = '';
 let seoImprovement = false;
+let userServiceBaseUrl = 'http://localhost:3001/user/';
+let urlAnalysisServiceBaseUrl = 'http://localhost:3002/analysis/';
 
 $(document).ready(function() {
 
@@ -39,7 +41,7 @@ $(document).ready(function() {
         seoImprovement = $("#seo-inprovement").val();
 
         $.ajax({
-            url: 'http://localhost:3000/analyze',
+            url: urlAnalysisServiceBaseUrl + 'analyze',
             type: 'POST',
             contentType: 'application/json',
             data: JSON.stringify({ url: url, userId: userId, seoImprovement: seoImprovement }),
@@ -60,7 +62,7 @@ $(document).ready(function() {
         const password = $('#loginPassword').val();
     
         $.ajax({
-            url: 'http://localhost:3000/login',
+            url: userServiceBaseUrl + 'login',
             type: 'POST',
             contentType: 'application/json',
             data: JSON.stringify({ email: email, password: password }),
@@ -94,7 +96,7 @@ $(document).ready(function() {
         }
 
         $.ajax({
-            url: 'http://localhost:3000/register',
+            url: userServiceBaseUrl + 'register',
             type: 'POST',
             contentType: 'application/json',
             data: JSON.stringify({ username: username, email: email, password: password }),
@@ -122,7 +124,7 @@ $(document).ready(function() {
         const userId = getLoggedUserId();
 
         $.ajax({
-            url: 'http://localhost:3000/credit',
+            url: userServiceBaseUrl + 'credit',
             type: 'POST',
             contentType: 'application/json',
             data: JSON.stringify({ userId: userId, credit: creditAmount }),      
@@ -195,7 +197,7 @@ function checkResult() {
     $('#seo-result').val('');
     seoImprovement = $("#seo-inprovement").val();
     $.ajax({
-        url: 'http://localhost:3000/result',
+        url: urlAnalysisServiceBaseUrl + 'result',
         type: 'GET',
         data: { userId: loggedUserId, seoImprovement: seoImprovement},
         success: function(response) {
@@ -247,7 +249,7 @@ function getUserCredit() {
     }
 
     $.ajax({
-        url: `http://localhost:3000/credit/${userId}`,
+        url: userServiceBaseUrl + `credit/${userId}`,
         type: 'GET', 
         success: function(response) {
             $('#manageUserDataModal').modal('show');
