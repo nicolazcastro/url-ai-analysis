@@ -74,17 +74,29 @@ async function writePartialData(data, outputDirectory) {
 }
 
 async function deleteFileIfExists(userId, outputDirectory) {
-    const files = await fs.readdir(outputDirectory);
-    const userFiles = files.filter(file => file.startsWith(`${userId}_`));
+    try {
+        // Check if the directory exists
+        await fs.access(outputDirectory, fs.constants.F_OK);
+    } catch (error) {
+        console.error(`Output directory ${outputDirectory} does not exist.`);
+        return;
+    }
 
-    for (const file of userFiles) {
-        const filePath = path.join(outputDirectory, file);
-        try {
-            await fs.unlink(filePath);
-            console.log(`Deleted file: ${filePath}`);
-        } catch (error) {
-            console.error(`Error deleting file ${filePath}: ${error.message}`);
+    try {
+        const files = await fs.readdir(outputDirectory);
+        const userFiles = files.filter(file => file.startsWith(`${userId}_`));
+
+        for (const file of userFiles) {
+            const filePath = path.join(outputDirectory, file);
+            try {
+                await fs.unlink(filePath);
+                console.log(`Deleted file: ${filePath}`);
+            } catch (error) {
+                console.error(`Error deleting file ${filePath}: ${error.message}`);
+            }
         }
+    } catch (error) {
+        console.error(`Error reading directory ${outputDirectory}: ${error.message}`);
     }
 }
 

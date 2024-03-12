@@ -155,8 +155,8 @@ $(document).ready(function() {
 
     $('#result').val('');
     $('#seo-result').val('');
-    $('#url').val('');    
-
+    //$('#url').val('');    
+    console.log("URL: " + $('#url').val());
     setUserDataLogin();
 });
 
@@ -201,7 +201,7 @@ function checkResult() {
         success: function(response) {
             if (response.completed === false) {
                 const logText = response.message.split(' - ')[1];
-                $('#result').html(logText);
+                $('#log').html(logText);
             } else {
                 isCompleted = true
                 const analysisResult = response.analysisResult;

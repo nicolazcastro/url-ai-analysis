@@ -111,9 +111,7 @@ const getResult = async (req, res) => {
     improveSeo = (seoImprovement === true || seoImprovement == '1') ? true : false;
 
     // Constructing file paths with userId
-    const resultFileName = `${encodeURIComponent(userId)}_${encodeURIComponent(analyzedUrl)}-ai-result.json`;
     const logFileName = `${encodeURIComponent(userId)}_log.txt`;
-    const resultFilePath = path.join(outputDirectory, resultFileName);
     const logFilePath = path.join(outputDirectory, logFileName);
 
     if (!analysisCompleted) {
@@ -128,6 +126,9 @@ const getResult = async (req, res) => {
         }
     } else {
         try {
+            const resultFileName = `${encodeURIComponent(userId)}_${encodeURIComponent(analyzedUrl)}-ai-result.json`;
+            const resultFilePath = path.join(outputDirectory, resultFileName);
+
             const jsonString = await fs.readFile(resultFilePath, 'utf8');
             const result = JSON.parse(jsonString);
             const content = result.choices[0].message.content; // Get the "content" node
