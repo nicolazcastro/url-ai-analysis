@@ -37,7 +37,8 @@ $(document).ready(function() {
         
         const userId = getLoggedUserId();
         seoImprovement = $("#seo-inprovement").val();
-
+        $('#analyzeBtn .spinner-border').removeClass('d-none');
+        
         $.ajax({
             url: 'http://localhost:3000/analyze',
             type: 'POST',
@@ -45,8 +46,10 @@ $(document).ready(function() {
             data: JSON.stringify({ url: url, userId: userId, seoImprovement: seoImprovement }),
             success: function(response) {
                 console.log(response);
+                $('#analyzeBtn .spinner-border').addClass('d-none');
             },
             error: function(err) {
+                $('#analyzeBtn .spinner-border').addClass('d-none');
                 isCompleted = true
                 showAlert('Error analyzing URL: ' + err.responseJSON.message);              
             }
