@@ -46,10 +46,8 @@ $(document).ready(function() {
             data: JSON.stringify({ url: url, userId: userId, seoImprovement: seoImprovement }),
             success: function(response) {
                 console.log(response);
-                $('#analyzeBtn .spinner-border').addClass('d-none');
             },
             error: function(err) {
-                $('#analyzeBtn .spinner-border').addClass('d-none');
                 isCompleted = true
                 showAlert('Error analyzing URL: ' + err.responseJSON.message);              
             }
@@ -212,6 +210,7 @@ function checkResult() {
 
                 $('#result').val(analysisResult);
                 $('#seo-result').val(analysisSeoResult);
+                $('#analyzeBtn .spinner-border').addClass('d-none');
             }
         },
         error: function(err) {
