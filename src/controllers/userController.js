@@ -1,5 +1,5 @@
 const userService = require('../services/userService');
-const { generateToken } = require('../services/authService');
+const { generateToken, verifyToken, refreshToken } = require('../services/authService');
 const { googleLoginCallback } = require('../services/authService'); // Import Google login callback function from authService
 
 
@@ -31,4 +31,32 @@ const loginUser = async (req, res) => {
     }
 };
 
-module.exports = { registerUser, loginUser, googleLoginCallback };
+const verifyUserToken = async (req, res) => {
+    const token = req.headers.authorization.split(' ')[1]; // Extract token from Authorization header
+    try {
+        const decodedToken = verifyToken(token);
+        // If the token is about to expire, generate a new one
+        if (decodedToken.exp * 1000 - Date.now() < 5 * 60 * 1000) {
+            const newToken = refreshToken(token);
+            res.send({ token: newToken });
+        } else {
+            // Token is still valid, return the same token
+            res.send({ token });
+        }
+    } catch (error) {
+        res.status(401).send({ message: 'Unauthorized' });
+    }
+};
+
+const refreshUserToken = async (req, res) => {
+    const token = req.headers.authorization.split(' ')[1]; // Extract token from Authorization header
+    try {
+        // Generate a new token if the existing token is about to expire
+        const newToken = refreshToken(token);
+        res.send({ token: newToken });
+    } catch (error) {
+        res.status(401).send({ message: 'Unauthorized' });
+    }
+};
+
+module.exports = { registerUser, loginUser, googleLoginCallback, verifyUserToken, refreshUserToken };

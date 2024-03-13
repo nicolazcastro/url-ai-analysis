@@ -5,7 +5,7 @@ let loggedUserId = '';
 let loggedUserEmail = '';
 let seoImprovement = false;
 
-$(document).ready(function() {
+$(function() {
 
     const urlParams = new URLSearchParams(window.location.search);
     const googleAuthToken = urlParams.get('token');
@@ -40,7 +40,7 @@ $(document).ready(function() {
         $('#analyzeBtn .spinner-border').removeClass('d-none');
         
         $.ajax({
-            url: 'http://localhost:3000/analyze',
+            url: 'http://localhost:3000/user/analyze',
             type: 'POST',
             contentType: 'application/json',
             data: JSON.stringify({ url: url, userId: userId, seoImprovement: seoImprovement }),
@@ -61,7 +61,7 @@ $(document).ready(function() {
         const password = $('#loginPassword').val();
     
         $.ajax({
-            url: 'http://localhost:3000/login',
+            url: 'http://localhost:3000/user/login',
             type: 'POST',
             contentType: 'application/json',
             data: JSON.stringify({ email: email, password: password }),
@@ -95,7 +95,7 @@ $(document).ready(function() {
         }
 
         $.ajax({
-            url: 'http://localhost:3000/register',
+            url: 'http://localhost:3000/user/register',
             type: 'POST',
             contentType: 'application/json',
             data: JSON.stringify({ username: username, email: email, password: password }),
@@ -123,7 +123,7 @@ $(document).ready(function() {
         const userId = getLoggedUserId();
 
         $.ajax({
-            url: 'http://localhost:3000/credit',
+            url: 'http://localhost:3000/user/credit',
             type: 'POST',
             contentType: 'application/json',
             data: JSON.stringify({ userId: userId, credit: creditAmount }),      
@@ -157,8 +157,11 @@ $(document).ready(function() {
     $('#result').val('');
     $('#seo-result').val('');
     //$('#url').val('');    
-    console.log("URL: " + $('#url').val());
+    
     setUserDataLogin();
+
+    // Refresh token every 30 minutes
+    setInterval(refreshToken, 30 * 60 * 1000);
 });
 
 function setSeo(seo){
@@ -184,11 +187,14 @@ function updateUserDisplayName(name) {
 }
 
 function setUserDataLogin(){
-    isLoggedIn = isUserLogged();
-    if (isLoggedIn) {
+    isUserLogged(function (isLoggedIn) {
+        isLoggedIn = isLoggedIn;
+        if (isLoggedIn) {
         updateUserDisplayName(loggedUserEmail); 
     }
     toggleUserOptions(isLoggedIn);
+    });
+    
 }
 
 function checkResult() {
@@ -196,7 +202,7 @@ function checkResult() {
     $('#seo-result').val('');
     seoImprovement = $("#seo-inprovement").val();
     $.ajax({
-        url: 'http://localhost:3000/result',
+        url: 'http://localhost:3000/user/result',
         type: 'GET',
         data: { userId: loggedUserId, seoImprovement: seoImprovement},
         success: function(response) {
@@ -249,7 +255,7 @@ function getUserCredit() {
     }
 
     $.ajax({
-        url: `http://localhost:3000/credit/${userId}`,
+        url: `http://localhost:3000/user/credit/${userId}`,
         type: 'GET', 
         success: function(response) {
             $('#manageUserDataModal').modal('show');
@@ -293,19 +299,49 @@ function getLoggedUserId(){
     return getUserIdFromToken(getToken());
 }
 
-function isUserLogged() {
+function isUserLogged(callback) {
     let token =  localStorage.getItem('token');
     if(token){
-        const decodedToken = decodeToken(token);
-        loggedUserId = decodedToken.userId;
-        loggedUserEmail = decodedToken.email;
-        if (decodedToken.exp * 1000 > Date.now()) {
-            return true;
-        } else {
-            return false;
-        }
+        $.ajax({
+            url: 'http://localhost:3000/user/verify-token',
+            type: 'POST',
+            contentType: 'application/json',
+            data: JSON.stringify({ token: token }),      
+            success: function(response) {
+                callback(true);
+                const token = response.token;
+                const decodedToken = decodeToken(token);
+                loggedUserId = decodedToken.userId;
+                loggedUserEmail = decodedToken.email;
+                toggleUserOptions(true);
+                updateUserDisplayName(loggedUserEmail);
+            },
+            error: function(err) {
+                callback(false);
+                showAlert(err.responseJSON.message);
+            }
+        });
     }
-    return false;
+    callback(false);
+}
+
+function refreshToken() {
+    const token = getToken();
+    if (token) {
+        $.ajax({
+            url: 'http://localhost:3000/user/refresh-token',
+            type: 'POST',
+            contentType: 'application/json',
+            data: JSON.stringify({ token: token }),      
+            success: function(response) {
+                localStorage.setItem('token', response.token);
+                console.log('Token refreshed successfully');
+            },
+            error: function(err) {
+                console.error('Error refreshing token:', err.responseJSON.message);
+            }
+        });
+    }
 }
 
 function decodeToken(token) {

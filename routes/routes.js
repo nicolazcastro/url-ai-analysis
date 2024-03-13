@@ -7,12 +7,14 @@ const { authMiddleware } = require('../src/middelwares/authMiddleware');
 const authService = require('../src/services/authService');
 
 // Existing routes
-router.post('/register', userController.registerUser);
-router.post('/login', userController.loginUser);
-router.post('/analyze', authMiddleware, urlAnalysisController.analyzeUrl);
-router.get('/result', authMiddleware, urlAnalysisController.getResult);
-router.post('/credit', authMiddleware, accountController.updateCredit);
-router.get('/credit/:userId', authMiddleware, accountController.getCredit);
+router.post('/user/register', userController.registerUser);
+router.post('/user/login', userController.loginUser);
+router.post('/user/verify-token', userController.verifyUserToken);
+router.post('/user/refresh-token', userController.refreshUserToken);
+router.post('/user/analyze', authMiddleware, urlAnalysisController.analyzeUrl);
+router.get('/user/result', authMiddleware, urlAnalysisController.getResult);
+router.post('/user/credit', authMiddleware, accountController.updateCredit);
+router.get('/user/credit/:userId', authMiddleware, accountController.getCredit);
 
 // Google Sign-In routes
 router.get('/auth/google', authService.googleLoginRedirect);

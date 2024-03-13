@@ -60,7 +60,7 @@ const googleLoginCallbackWithToken = (req, res) => {
 
 const generateToken = (userId, email) => {
     return jwt.sign({ userId, email }, process.env.JWT_SECRET, {
-        expiresIn: '7d'
+        expiresIn: '1h'
     });
 };
 
@@ -68,4 +68,38 @@ const verifyToken = (token) => {
     return jwt.verify(token, process.env.JWT_SECRET);
 };
 
-module.exports = { googleLoginCallback, googleLoginRedirect, generateToken, verifyToken };
+const refreshToken = (token) => {
+    try {
+        // Verify the token
+        const decodedToken = jwt.verify(token, process.env.JWT_SECRET);
+
+        // Extract payload data from the old token
+        const { userId, email } = decodedToken;
+
+        // Check if the token is about to expire (e.g., within the next 5 minutes)
+        const expirationTime = decodedToken.exp * 1000; // Convert to milliseconds
+        const currentTime = Date.now();
+        const timeToExpire = expirationTime - currentTime;
+
+        // If the token is about to expire (within the next 5 minutes), generate a new token
+        if (timeToExpire < 5 * 60 * 1000) {
+            console.log('Token is about to expire. Generating a new token...');
+            
+            // Generate a new token with a renewed expiration time
+            const newToken = jwt.sign({ userId, email }, process.env.JWT_SECRET, { expiresIn: '1h' }); // Example: 1 hour expiration
+            console.log('New token generated:', newToken);
+            
+            return newToken;
+        } else {
+            // Token is still valid, return the same token
+            console.log('Token is still valid.');
+            return token;
+        }
+    } catch (error) {
+        // Token verification failed, return unauthorized
+        console.error('Token verification failed:', error);
+        throw new Error('Unauthorized');
+    }
+};
+
+module.exports = { googleLoginCallback, googleLoginRedirect, generateToken, verifyToken, refreshToken };
